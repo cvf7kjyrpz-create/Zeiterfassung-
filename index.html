@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V25">
-    <title>Arbeitszeit Tracker V25</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V26">
+    <title>Arbeitszeit Tracker V26</title>
 
     <style>
         :root {
@@ -99,7 +99,7 @@
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
         .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); margin-top: 10px; }
         
-        /* V25 LIST BUTTON - BLAU & AUFFÄLLIG */
+        /* LIST BUTTON - BLAU & AUFFÄLLIG */
         .btn-list-view {
             width: 100%; 
             padding: 12px; 
@@ -265,7 +265,7 @@
         .modal-add-area { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
         .modal-add-title { font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
 
-        /* V24/25 LIST MODAL STYLES */
+        /* LIST MODAL STYLES */
         .list-view-item {
             padding: 12px;
             margin-bottom: 8px;
@@ -1298,14 +1298,19 @@
             document.getElementById('day-modal').classList.remove('open');
         }
 
-        // --- IMPORT / EXPORT ---
+        // --- IMPORT / EXPORT (V26) ---
         function exportData() {
-            const dataStr = JSON.stringify(entries);
+            // V26: Save both entries AND settings
+            const exportObj = {
+                entries: entries,
+                settings: settings
+            };
+            const dataStr = JSON.stringify(exportObj);
             const blob = new Blob([dataStr], {type: "application/json"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v25_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v26_full_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1318,14 +1323,23 @@
             reader.onload = function(e) {
                 try {
                     const json = JSON.parse(e.target.result);
-                    if(Array.isArray(json)) {
-                        if(confirm("Überschreiben?")) {
+                    if(confirm("Daten und Einstellungen überschreiben?")) {
+                        // V26 Smart Import
+                        if(Array.isArray(json)) {
+                            // Old format (only entries)
                             entries = json;
                             localStorage.setItem('trackData_v5', JSON.stringify(entries));
-                            updateUI();
+                        } else if (json.entries && json.settings) {
+                            // New format (entries + settings)
+                            entries = json.entries;
+                            settings = json.settings;
+                            localStorage.setItem('trackData_v5', JSON.stringify(entries));
+                            localStorage.setItem('trackSettings_v17', JSON.stringify(settings));
                         }
+                        updateUI();
+                        alert("Erfolgreich geladen!");
                     }
-                } catch(err) { alert("Fehler"); }
+                } catch(err) { alert("Fehler beim Laden: " + err); }
             };
             reader.readAsText(file);
             input.value = '';
