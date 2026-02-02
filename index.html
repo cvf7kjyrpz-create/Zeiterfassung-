@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V5">
-    <title>Arbeitszeit Tracker V5</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V6">
+    <title>Arbeitszeit Tracker V6</title>
 
     <style>
         :root {
@@ -95,7 +95,7 @@
         }
         .toggle-btn.active { background: #3a3a3c; color: #fff; }
 
-        /* Helper für unsichtbare Bereiche */
+        /* Helper */
         .hidden { display: none; }
 
         /* VERLAUF LISTE */
@@ -117,12 +117,25 @@
         .h-val.pos { color: #30d158; }
         .h-note { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #ddd; font-style: italic; }
 
-        /* STATISTIK GRID */
+        /* STATISTIK GRID MIT EDIT-FUNKTION */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .stat-box { background-color: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--card-border); }
+        .stat-box { 
+            background-color: var(--card); 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid var(--card-border); 
+            position: relative;
+            cursor: pointer; /* Zeigt an, dass es klickbar ist */
+        }
+        .stat-box:active { opacity: 0.7; }
+        
         .stat-box h4 { margin: 0 0 5px; font-size: 11px; color: var(--text-sub); text-transform: uppercase; }
         .stat-box span { font-size: 18px; font-weight: 700; color: var(--text); }
         .unit { font-size: 12px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
+        
+        .edit-icon {
+            position: absolute; top: 10px; right: 10px; font-size: 14px; opacity: 0.5;
+        }
 
         /* Tools */
         .data-tools { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border); display: flex; gap: 10px; }
@@ -167,61 +180,37 @@
 
             <div id="section-time-range" class="hidden">
                 <div class="input-row">
-                    <div class="input-col">
-                        <label>Datum</label>
-                        <input type="date" id="date-single" onchange="autoFillTimes()">
-                    </div>
+                    <div class="input-col"><label>Datum</label><input type="date" id="date-single" onchange="autoFillTimes()"></div>
                 </div>
                 <div class="input-row">
-                    <div class="input-col">
-                        <label>Von</label>
-                        <input type="time" id="time-start" value="07:00">
-                    </div>
-                    <div class="input-col">
-                        <label>Bis</label>
-                        <input type="time" id="time-end" value="16:30">
-                    </div>
+                    <div class="input-col"><label>Von</label><input type="time" id="time-start" value="07:00"></div>
+                    <div class="input-col"><label>Bis</label><input type="time" id="time-end" value="16:30"></div>
                 </div>
             </div>
 
             <div id="section-date-range" class="hidden">
                 <div class="input-row">
-                    <div class="input-col">
-                        <label>Vom Tag</label>
-                        <input type="date" id="date-start" onchange="calcDaysDiff()">
-                    </div>
-                    <div class="input-col">
-                        <label>Bis Tag (inkl.)</label>
-                        <input type="date" id="date-end" onchange="calcDaysDiff()">
-                    </div>
+                    <div class="input-col"><label>Vom Tag</label><input type="date" id="date-start" onchange="calcDaysDiff()"></div>
+                    <div class="input-col"><label>Bis Tag (inkl.)</label><input type="date" id="date-end" onchange="calcDaysDiff()"></div>
                 </div>
                 <div class="input-row">
-                    <div class="input-col">
-                        <label>Berechnete Tage (Mo-Fr)</label>
-                        <input type="number" id="calc-days-val" value="0">
-                    </div>
+                    <div class="input-col"><label>Anzahl Tage (Mo-Fr)</label><input type="number" id="calc-days-val" value="0"></div>
                 </div>
             </div>
 
             <div id="section-manual" class="hidden">
                 <div class="input-row">
-                    <div class="input-col">
-                        <label>Buchungsdatum</label>
-                        <input type="date" id="date-manual">
-                    </div>
+                    <div class="input-col"><label>Datum</label><input type="date" id="date-manual"></div>
                 </div>
                 <div class="input-row">
-                    <div class="input-col">
-                        <label id="lbl-amount">Menge (Stunden/Tage)</label>
-                        <input type="number" id="inp-amount" placeholder="z.B. 8" step="0.1">
-                    </div>
+                    <div class="input-col"><label id="lbl-amount">Menge</label><input type="number" id="inp-amount" placeholder="z.B. 8" step="0.1"></div>
                 </div>
             </div>
 
             <div class="input-row">
                 <div class="input-col">
-                    <label>Begründung / Notiz</label>
-                    <textarea id="inp-note" placeholder="Grund für Eintrag..."></textarea>
+                    <label>Notiz</label>
+                    <textarea id="inp-note" placeholder="Grund..."></textarea>
                 </div>
             </div>
 
@@ -234,7 +223,9 @@
         </div>
 
         <div id="view-stats" class="view">
+            <div style="text-align:center; margin-bottom:10px; font-size:12px; color:#666;">Tippe auf eine Box, um den Wert zu ändern.</div>
             <div class="stats-grid" id="stats-grid"></div>
+            
             <div class="data-tools">
                 <button class="btn-small" onclick="exportData()">💾 Backup</button>
                 <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Laden</button>
@@ -253,28 +244,24 @@
     </nav>
 
     <script>
-        // DATENSPEICHER (Neue Version v5 für sauberen Start, kann alte Daten aber nicht lesen ohne Import)
         let entries = JSON.parse(localStorage.getItem('trackData_v5')) || [];
-        let mode = 'taken'; // 'taken' or 'earned'
+        let mode = 'taken'; 
         const HOURS_PER_DAY = 8; 
 
-        // ARBEITSZEITEN FÜR STUNDEN-KALKULATION (Mo-Fr)
         const SCHEDULE = {
-            1: { s: "07:00", e: "17:30" }, // Mo
-            2: { s: "07:00", e: "16:30" }, // Di
-            3: { s: "07:00", e: "15:30" }, // Mi
-            4: { s: "07:00", e: "16:30" }, // Do
-            5: { s: "07:00", e: "11:00" }  // Fr
+            1: { s: "07:00", e: "17:30" }, 
+            2: { s: "07:00", e: "16:30" }, 
+            3: { s: "07:00", e: "15:30" }, 
+            4: { s: "07:00", e: "16:30" }, 
+            5: { s: "07:00", e: "11:00" }  
         };
 
         window.onload = function() {
-            // Datum Felder auf Heute setzen
             const today = new Date().toISOString().slice(0,10);
             document.getElementById('date-single').value = today;
             document.getElementById('date-start').value = today;
             document.getElementById('date-end').value = today;
             document.getElementById('date-manual').value = today;
-            
             updateForm();
             updateUI();
         };
@@ -286,40 +273,29 @@
             updateForm();
         }
 
-        // Steuert, welche Felder sichtbar sind
         function updateForm() {
             const cat = document.getElementById('inp-cat').value;
-            
-            // Container
             const cTime = document.getElementById('section-time-range');
             const cDate = document.getElementById('section-date-range');
             const cManual = document.getElementById('section-manual');
             const lblAmount = document.getElementById('lbl-amount');
 
-            // Reset Visibility
             cTime.classList.add('hidden');
             cDate.classList.add('hidden');
             cManual.classList.add('hidden');
 
-            // LOGIK
             if (mode === 'earned') {
-                // Wenn man etwas BEKOMMT: Immer manuelles Feld
                 cManual.classList.remove('hidden');
-                // Label anpassen
                 if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) {
                     lblAmount.innerText = "Menge (Tage)";
                 } else {
                     lblAmount.innerText = "Menge (Stunden)";
                 }
-
             } else {
-                // Wenn man etwas NIMMT (taken)
                 if (cat === 'Stunden' || cat === 'Langzeitkonto') {
-                    // Zeit-Bereich zeigen
                     cTime.classList.remove('hidden');
-                    autoFillTimes(); // Zeiten neu berechnen für gewählten Tag
+                    autoFillTimes();
                 } else {
-                    // Urlaubs-Bereich (Von Tag bis Tag) zeigen
                     cDate.classList.remove('hidden');
                 }
             }
@@ -336,23 +312,17 @@
             }
         }
 
-        // Berechnet Tage zwischen zwei Daten (nur Mo-Fr)
         function calcDaysDiff() {
             const sStr = document.getElementById('date-start').value;
             const eStr = document.getElementById('date-end').value;
             if(!sStr || !eStr) return;
-
             let dStart = new Date(sStr);
             let dEnd = new Date(eStr);
-            
             let count = 0;
             let current = new Date(dStart);
-
             while (current <= dEnd) {
                 const day = current.getDay();
-                if (day !== 0 && day !== 6) { // Nicht So(0) und nicht Sa(6)
-                    count++;
-                }
+                if (day !== 0 && day !== 6) count++;
                 current.setDate(current.getDate() + 1);
             }
             document.getElementById('calc-days-val').value = count;
@@ -361,76 +331,64 @@
         function saveEntry() {
             const cat = document.getElementById('inp-cat').value;
             const note = document.getElementById('inp-note').value;
-            
             let hoursValue = 0;
             let displayDate = "";
-            let displayTime = ""; // Text für Verlauf
+            let displayTime = ""; 
 
-            // DATEN SAMMELN JE NACH SICHTBAREM FELD
             if (!document.getElementById('section-manual').classList.contains('hidden')) {
-                // --- MANUELL (ERHALTEN) ---
                 const val = parseFloat(document.getElementById('inp-amount').value);
                 const d = document.getElementById('date-manual').value;
-                if (!val || !d) { alert('Bitte Menge und Datum prüfen'); return; }
-                
+                if (!val || !d) { alert('Bitte Menge prüfen'); return; }
                 displayDate = d;
                 displayTime = "Pauschal";
-
-                // Umrechnung für Speicher: Wir speichern alles in Stunden
                 if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) {
                     hoursValue = val * HOURS_PER_DAY;
                 } else {
                     hoursValue = val;
                 }
-
             } else if (!document.getElementById('section-time-range').classList.contains('hidden')) {
-                // --- ZEITRAUM (STUNDEN NEHMEN) ---
                 const d = document.getElementById('date-single').value;
                 const t1 = document.getElementById('time-start').value;
                 const t2 = document.getElementById('time-end').value;
-                
                 let s = t1.split(':').map(Number);
                 let e = t2.split(':').map(Number);
                 let diff = (e[0]*60 + e[1]) - (s[0]*60 + s[1]);
-                if(diff === 0) diff = 24 * 60; // 24h bei gleicher Zeit
-                if(diff < 0) diff += 1440; // über Nacht
-
+                if(diff === 0) diff = 24 * 60; 
+                if(diff < 0) diff += 1440; 
                 hoursValue = diff / 60;
                 displayDate = d;
                 displayTime = `${t1} - ${t2}`;
-
             } else if (!document.getElementById('section-date-range').classList.contains('hidden')) {
-                // --- DATUMSPANNE (URLAUB NEHMEN) ---
                 const d1 = document.getElementById('date-start').value;
                 const d2 = document.getElementById('date-end').value;
                 const days = parseFloat(document.getElementById('calc-days-val').value);
-                
-                if (days <= 0) { alert('0 Tage ausgewählt?'); return; }
-
+                if (days <= 0) { alert('0 Tage?'); return; }
                 displayDate = d1; 
                 if (d1 !== d2) displayDate += " bis " + d2;
-                
                 displayTime = days + " Tag(e)";
                 hoursValue = days * HOURS_PER_DAY;
             }
 
-            const newEntry = {
-                id: Date.now(),
-                cat: cat,
-                date: displayDate, // Wir speichern Datum als String
-                timeDesc: displayTime,
-                hours: hoursValue,
-                mode: mode,
-                note: note
-            };
-
-            entries.unshift(newEntry);
-            localStorage.setItem('trackData_v5', JSON.stringify(entries));
+            addEntryInternal(cat, displayDate, displayTime, hoursValue, mode, note);
             
             alert('Gespeichert');
             document.getElementById('inp-note').value = "";
             document.getElementById('inp-amount').value = "";
             updateUI();
+        }
+
+        function addEntryInternal(cat, date, timeDesc, hours, mode, note) {
+            const newEntry = {
+                id: Date.now(),
+                cat: cat,
+                date: date,
+                timeDesc: timeDesc,
+                hours: hours,
+                mode: mode,
+                note: note
+            };
+            entries.unshift(newEntry);
+            localStorage.setItem('trackData_v5', JSON.stringify(entries));
         }
 
         function deleteEntry(id) {
@@ -441,6 +399,38 @@
             }
         }
 
+        // --- STATISTIK BEARBEITEN ---
+        function adjustStat(catName, currentTotalHours, unit) {
+            let newValStr = prompt(`Aktueller Stand: ${unit === 'Tage' ? (currentTotalHours/8).toFixed(2) : currentTotalHours.toFixed(2)} ${unit}.\n\nBitte neuen GEWÜNSCHTEN Stand eingeben:`);
+            
+            if (newValStr === null) return; // Abbrechen
+            let newVal = parseFloat(newValStr.replace(',', '.'));
+            if (isNaN(newVal)) { alert("Keine gültige Zahl"); return; }
+
+            // Ziel in Stunden umrechnen
+            let targetHours = newVal;
+            if (unit === 'Tage') targetHours = newVal * HOURS_PER_DAY;
+
+            // Differenz berechnen
+            let diff = targetHours - currentTotalHours;
+
+            if (diff === 0) return; // Nichts zu tun
+
+            let mode = diff > 0 ? 'earned' : 'taken';
+            let amount = Math.abs(diff);
+
+            // Eintrag erzeugen
+            addEntryInternal(
+                catName, 
+                new Date().toISOString().slice(0,10), 
+                "Korrektur", 
+                amount, 
+                mode, 
+                "Manuelle Korrektur Statistik"
+            );
+            updateUI();
+        }
+
         function updateUI() {
             renderHistory();
             renderStats();
@@ -449,7 +439,6 @@
         function renderHistory() {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
-            
             if(entries.length === 0) document.getElementById('no-data-msg').style.display = 'block';
             else document.getElementById('no-data-msg').style.display = 'none';
 
@@ -466,7 +455,6 @@
                 let sign = e.mode === 'taken' ? '-' : '+';
                 
                 let displayVal = "";
-                // Anzeige je nach Kategorie in Stunden oder Tagen
                 if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
                     displayVal = (e.hours / HOURS_PER_DAY).toFixed(2) + " d";
                 } else {
@@ -520,13 +508,19 @@
 
                 let color = displayVal >= 0 ? '#fff' : '#ff453a';
 
-                let box = `
-                    <div class="stat-box">
-                        <h4>${c.name}</h4>
-                        <span style="color:${color}">${displayVal}<span class="unit">${c.unit}</span></span>
-                    </div>
+                // Klickbares Element für Änderung
+                let box = document.createElement('div');
+                box.className = 'stat-box';
+                box.innerHTML = `
+                    <div class="edit-icon">✎</div>
+                    <h4>${c.name}</h4>
+                    <span style="color:${color}">${displayVal}<span class="unit">${c.unit}</span></span>
                 `;
-                grid.innerHTML += box;
+                box.onclick = function() {
+                    adjustStat(c.name, sumHours, c.unit);
+                };
+
+                grid.appendChild(box);
             });
         }
 
@@ -536,7 +530,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v5_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v6_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
