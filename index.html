@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V6">
-    <title>Arbeitszeit Tracker V6</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V7">
+    <title>Arbeitszeit Tracker V7</title>
 
     <style>
         :root {
@@ -60,10 +60,13 @@
 
         /* Eingabe Form */
         .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        .input-col { flex: 1; }
+        
+        /* WICHTIG: min-width: 0 verhindert das Zusammendrücken bei Flexbox */
+        .input-col { flex: 1; min-width: 0; }
         
         label { display: block; color: var(--text-sub); font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
         
+        /* WICHTIG: Font-Size auf 17px erhöht gegen iOS Zoom */
         input, select, textarea {
             width: 100%;
             background-color: var(--input);
@@ -71,7 +74,7 @@
             color: white;
             padding: 12px;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 17px; 
             box-sizing: border-box;
             -webkit-appearance: none;
             font-family: inherit;
@@ -81,7 +84,7 @@
         
         /* Buttons */
         .btn {
-            width: 100%; padding: 14px; border-radius: 8px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 5px;
+            width: 100%; padding: 14px; border-radius: 8px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 5px;
         }
         .btn-primary { background-color: var(--card-border); color: var(--accent); }
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
@@ -125,7 +128,7 @@
             border-radius: 8px; 
             border: 1px solid var(--card-border); 
             position: relative;
-            cursor: pointer; /* Zeigt an, dass es klickbar ist */
+            cursor: pointer;
         }
         .stat-box:active { opacity: 0.7; }
         
@@ -399,27 +402,22 @@
             }
         }
 
-        // --- STATISTIK BEARBEITEN ---
         function adjustStat(catName, currentTotalHours, unit) {
-            let newValStr = prompt(`Aktueller Stand: ${unit === 'Tage' ? (currentTotalHours/8).toFixed(2) : currentTotalHours.toFixed(2)} ${unit}.\n\nBitte neuen GEWÜNSCHTEN Stand eingeben:`);
+            let newValStr = prompt(`Aktuell: ${unit === 'Tage' ? (currentTotalHours/8).toFixed(2) : currentTotalHours.toFixed(2)} ${unit}.\n\nNeuer Stand:`);
             
-            if (newValStr === null) return; // Abbrechen
+            if (newValStr === null) return; 
             let newVal = parseFloat(newValStr.replace(',', '.'));
             if (isNaN(newVal)) { alert("Keine gültige Zahl"); return; }
 
-            // Ziel in Stunden umrechnen
             let targetHours = newVal;
             if (unit === 'Tage') targetHours = newVal * HOURS_PER_DAY;
 
-            // Differenz berechnen
             let diff = targetHours - currentTotalHours;
-
-            if (diff === 0) return; // Nichts zu tun
+            if (diff === 0) return; 
 
             let mode = diff > 0 ? 'earned' : 'taken';
             let amount = Math.abs(diff);
 
-            // Eintrag erzeugen
             addEntryInternal(
                 catName, 
                 new Date().toISOString().slice(0,10), 
@@ -508,7 +506,6 @@
 
                 let color = displayVal >= 0 ? '#fff' : '#ff453a';
 
-                // Klickbares Element für Änderung
                 let box = document.createElement('div');
                 box.className = 'stat-box';
                 box.innerHTML = `
@@ -530,7 +527,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v6_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v7_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
