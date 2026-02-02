@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V21">
-    <title>Arbeitszeit Tracker V21</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V22">
+    <title>Arbeitszeit Tracker V22</title>
 
     <style>
         :root {
@@ -107,7 +107,7 @@
         /* Helper */
         .hidden { display: none; }
 
-        /* VERLAUF LISTE */
+        /* VERLAUF LISTE (Allgemein) */
         .history-item {
             background-color: var(--card); padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #555; position: relative;
             display: flex; justify-content: space-between; align-items: center;
@@ -155,7 +155,6 @@
         .stat-box.full-width { grid-column: span 2; cursor: default; padding-bottom: 4px; }
         .stat-box.full-width h4 { color: var(--accent); margin-bottom: 4px; font-size: 11px;}
         .upcoming-list { list-style: none; padding: 0; margin: 0; }
-        /* Clickable Item Style */
         .upcoming-item { 
             display: flex; justify-content: space-between; padding: 6px 4px; 
             border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; 
@@ -170,7 +169,6 @@
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
         
-        /* Filter Container - Kompakt & No Scroll */
         .cal-filter-container { display: flex; gap: 4px; margin-bottom: 15px; width: 100%; justify-content: space-between; }
         .cal-filter-btn { 
             flex: 1; 
@@ -209,7 +207,6 @@
         }
         .day-cell.empty { background: none; pointer-events: none; }
         
-        /* Multi-Color Dots Container */
         .event-dots {
             display: flex;
             gap: 3px;
@@ -221,13 +218,44 @@
             padding: 0 2px;
         }
         .event-dot {
-            width: 7px; /* V21 Bigger */
-            height: 7px; /* V21 Bigger */
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background-color: #555;
-            box-shadow: 0 0 2px rgba(0,0,0,0.8); /* V21 Shadow */
+            box-shadow: 0 0 2px rgba(0,0,0,0.8);
         }
         
+        /* NEW: LIST VIEW UNDER CALENDAR */
+        #calendar-list-container {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--card-border);
+        }
+        .cal-list-header {
+            font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px;
+        }
+        .cal-list-item {
+            background-color: var(--card);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+        }
+        .cal-list-item:active { background-color: #333; }
+        .cal-list-date {
+            width: 50px;
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+        .cal-list-info { flex: 1; display: flex; align-items: center; gap: 8px; }
+        .cal-list-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 2px black; }
+        .cal-list-name { font-weight: 600; font-size: 14px; }
+        .cal-list-detail { font-size: 12px; color: #888; margin-left: auto; }
+
         /* POPUP MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
         .modal-overlay.open { display: flex; }
@@ -355,6 +383,9 @@
             </div>
 
             <div class="calendar-grid" id="calendar-root"></div>
+            
+            <div id="calendar-list-container"></div>
+            
             <div style="height: 50px;"></div>
         </div>
 
@@ -806,7 +837,6 @@
             });
         }
 
-        // V21: Interaktive Liste
         function renderStats() {
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
@@ -837,7 +867,6 @@
                     else if(u.cat === 'Urlaub') col = 'var(--c-urlaub)';
                     else if(u.cat === 'Stunden') col = 'var(--c-stunden)';
                     
-                    // ONCLICK EVENT HIER:
                     listHtml += `
                         <li class="upcoming-item" onclick="jumpToDate('${u.isoStart}')">
                             <span class="u-date">${formatDateDE(u.isoStart).slice(0,6)}</span>
@@ -915,21 +944,16 @@
             });
         }
 
-        // V21 NEW FUNCTION
         function jumpToDate(isoDate) {
-            // Switch tab
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById('view-calendar').classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            // Index 1 is calendar (manuell)
             document.querySelectorAll('.nav-item')[1].classList.add('active');
 
-            // Set Year and Render
             const d = new Date(isoDate);
             currentCalYear = d.getFullYear();
             renderCalendar();
 
-            // Open Modal immediately
             const events = getEventsForDate(isoDate);
             openModal(isoDate, events);
         }
@@ -956,11 +980,71 @@
                 if(calendarFilter === 'all') return matchesDate;
                 if(calendarFilter === 'taken') return matchesDate && e.mode === 'taken';
                 if(calendarFilter === 'earned') return matchesDate && e.mode === 'earned';
-                // V21 Specific
                 if(calendarFilter === 'termin') return matchesDate && e.cat === 'Termin';
                 if(calendarFilter === 'dienst') return matchesDate && e.cat === 'Dienst';
                 
                 return false;
+            });
+        }
+
+        // V22: RENDER LIST BELOW CALENDAR
+        function renderCalendarList() {
+            const container = document.getElementById('calendar-list-container');
+            container.innerHTML = '';
+            
+            // Titel je nach Filter
+            let title = "Alle Einträge";
+            if(calendarFilter === 'taken') title = "Genommen (Urlaub/Frei)";
+            else if(calendarFilter === 'earned') title = "Erhalten (Stunden)";
+            else if(calendarFilter === 'termin') title = "Termine";
+            else if(calendarFilter === 'dienst') title = "Dienste";
+            
+            container.innerHTML = `<div class="cal-list-header">${title} ${currentCalYear}</div>`;
+            
+            // Filtern für das ganze Jahr
+            const yearEntries = entries.filter(e => {
+                ensureIsoDates(e);
+                if(!e.isoStart) return false;
+                if(!e.isoStart.startsWith(currentCalYear.toString())) return false; // Nur aktuelles Jahr
+                
+                // Gleiche Filterlogik wie oben
+                if(calendarFilter === 'all') return true;
+                if(calendarFilter === 'taken') return e.mode === 'taken';
+                if(calendarFilter === 'earned') return e.mode === 'earned';
+                if(calendarFilter === 'termin') return e.cat === 'Termin';
+                if(calendarFilter === 'dienst') return e.cat === 'Dienst';
+                return false;
+            }).sort((a,b) => a.isoStart.localeCompare(b.isoStart)); // Sortiert
+
+            if(yearEntries.length === 0) {
+                container.innerHTML += '<div style="font-size:12px; color:#666; padding:10px; text-align:center;">Keine Einträge für diesen Filter.</div>';
+                return;
+            }
+
+            yearEntries.forEach(e => {
+                let color = '#555';
+                if(e.color) color = e.color;
+                else if(e.cat.startsWith('Urlaub')) color = 'var(--c-urlaub)';
+                else if(e.cat.startsWith('Stunden')) color = 'var(--c-stunden)';
+                else if(e.cat.startsWith('Kind')) color = 'var(--c-krank)';
+                else if(e.cat.startsWith('DA')) color = 'var(--c-da)';
+                else if(e.cat.startsWith('Lang')) color = 'var(--c-lzk)';
+                else if(e.cat.startsWith('Sonder')) color = 'var(--c-sonder)';
+
+                let displayTitle = e.cat;
+                if((e.cat === 'Termin' || e.cat === 'Dienst') && e.note) displayTitle = e.note;
+                else if(e.cat === 'Urlaub' || e.cat === 'Stunden') displayTitle = e.cat + " ("+e.timeDesc+")";
+
+                let html = `
+                    <div class="cal-list-item" onclick="jumpToDate('${e.isoStart}')">
+                        <div class="cal-list-date">${formatDateDE(e.isoStart).slice(0,6)}</div>
+                        <div class="cal-list-info">
+                            <div class="cal-list-dot" style="background:${color}"></div>
+                            <div class="cal-list-name">${displayTitle}</div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
             });
         }
 
@@ -1001,7 +1085,6 @@
                 for(let d=1; d<=daysInMonth; d++) {
                     const cell = document.createElement('div');
                     cell.className = 'day-cell';
-                    // Text Node for number
                     let spanNum = document.createElement('span');
                     spanNum.innerText = d;
                     cell.appendChild(spanNum);
@@ -1012,18 +1095,15 @@
 
                     const dayEvents = getEventsForDate(isoDate);
                     
-                    // DOTS CONTAINER
                     const dotsContainer = document.createElement('div');
                     dotsContainer.className = 'event-dots';
 
                     if(dayEvents.length > 0) {
                         let visibleEvents = dayEvents.filter(e => {
-                            // Filter Logic for dots
                             if(calendarFilter === 'all') {
                                 if(e.cat === 'Termin' || e.cat === 'Dienst' || e.mode === 'taken') return true;
                                 return false;
                             }
-                            // Specific filters handle by getEventsForDate already
                             return true;
                         });
 
@@ -1044,7 +1124,6 @@
                             dotsContainer.appendChild(dot);
                         });
                         
-                        // Background highlight if many
                         if(visibleEvents.length > 0) cell.classList.add('has-event');
                     }
                     
@@ -1056,6 +1135,9 @@
                 monthDiv.appendChild(daysGrid);
                 root.appendChild(monthDiv);
             }
+
+            // V22: LISTE RENDERN
+            renderCalendarList();
         }
 
         // --- POPUP LOGIC ---
@@ -1187,7 +1269,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v21_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v22_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
