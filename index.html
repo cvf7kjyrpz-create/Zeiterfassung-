@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Meine App">
+
+    <title>Meine GitHub App</title>
+
+    <style>
+        /* --- CSS DESIGN (STYLES) --- */
+        :root {
+            --primary-color: #007AFF; /* iOS Blau */
+            --bg-color: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-color: #1c1c1e;
+            --secondary-text: #8e8e93;
+        }
+
+        /* Dark Mode Unterstützung automatisch */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --card-bg: #1c1c1e;
+                --text-color: #ffffff;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            -webkit-tap-highlight-color: transparent;
+            /* Sorgt dafür, dass man nicht über den Rand scrollen kann ("Gummiband-Effekt" weg) */
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Bereich */
+        header {
+            padding-top: max(20px, env(safe-area-inset-top)); /* Platz für die Notch */
+            padding-bottom: 15px;
+            padding-left: 20px;
+            padding-right: 20px;
+            background-color: var(--card-bg);
+            border-bottom: 0.5px solid rgba(128, 128, 128, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* Hauptinhalt - Scrollbar */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 100px; /* Platz für Navigationsleiste unten */
+        }
+
+        /* Karten Design */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: var(--secondary-text);
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        /* Ein schöner Button */
+        .action-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:active {
+            opacity: 0.7;
+        }
+
+        /* Counter Anzeige */
+        #counter-display {
+            font-size: 40px;
+            font-weight: 800;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+
+        /* Tab Bar unten (Fake Navigation) */
+        nav.tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--card-bg);
+            border-top: 0.5px solid rgba(128, 128, 128, 0.2);
+            padding-bottom: env(safe-area-inset-bottom);
+            display: flex;
+            justify-content: space-around;
+            padding-top: 10px;
+            height: 60px;
+        }
+
+        .tab-item {
+            text-align: center;
+            font-size: 10px;
+            color: var(--secondary-text);
+            width: 100%;
+        }
+        
+        .tab-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .tab-item.active {
+            color: var(--primary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Mein Dashboard</h1>
+        <div style="font-size: 14px; color: var(--primary-color);">Profil</div>
+    </header>
+
+    <main>
+        
+        <div class="card">
+            <h2>Willkommen zurück</h2>
+            <p>Dies ist deine App, die direkt über GitHub läuft. Sie verhält sich wie eine echte iOS App.</p>
+        </div>
+
+        <div class="card">
+            <h2>Interaktionstest</h2>
+            <p>Drücke den Button, um zu sehen, dass JavaScript funktioniert.</p>
+            
+            <div id="counter-display">0</div>
+            
+            <button class="action-btn" onclick="increaseCounter()">Zähler erhöhen</button>
+        </div>
+
+        <div class="card">
+            <h2>Info</h2>
+            <p>Füge diese Seite zum Home-Bildschirm hinzu, um die Adressleiste auszublenden.</p>
+        </div>
+
+    </main>
+
+    <nav class="tab-bar">
+        <div class="tab-item active">
+            <span class="tab-icon">🏠</span>
+            Start
+        </div>
+        <div class="tab-item">
+            <span class="tab-icon">🔍</span>
+            Suche
+        </div>
+        <div class="tab-item">
+            <span class="tab-icon">⚙️</span>
+            Settings
+        </div>
+    </nav>
+
+    <script>
+        /* --- JAVASCRIPT FUNKTIONEN --- */
+        
+        let count = 0;
+
+        function increaseCounter() {
+            count++;
+            const display = document.getElementById('counter-display');
+            display.innerText = count;
+            
+            // Kleines haptisches Feedback (Vibration), falls vom Browser unterstützt
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        // Verhindert das "Über-Scrollen" auf iOS, damit es sich fester anfühlt
+        document.body.addEventListener('touchmove', function(e) {
+            // Wenn wir nicht im scrollbaren main-Bereich sind, verhindern
+            if (!e.target.closest('main')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        console.log("App wurde erfolgreich geladen.");
+    </script>
+</body>
+</html>
