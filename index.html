@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V15">
-    <title>Arbeitszeit Tracker V15</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V16">
+    <title>Arbeitszeit Tracker V16</title>
 
     <style>
         :root {
@@ -116,7 +116,7 @@
         .cat-da { border-left-color: var(--c-da); }
         .cat-lzk { border-left-color: var(--c-lzk); }
         .cat-sonder { border-left-color: var(--c-sonder); }
-        .cat-termin { border-left-width: 4px; border-left-style: solid; } /* Für Termine */
+        .cat-termin { border-left-width: 4px; border-left-style: solid; } 
 
         .h-top { display: flex; justify-content: space-between; align-items: flex-start; }
         .h-title { font-size: 15px; font-weight: 600; }
@@ -126,33 +126,36 @@
         .h-val.pos { color: #30d158; }
         .h-note { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #ddd; font-style: italic; }
 
-        /* STATISTIK GRID */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* STATISTIK GRID KOMPAKT */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        
         .stat-box { 
             background-color: var(--card); 
-            padding: 12px; 
+            padding: 8px 10px; /* Kompakter */
             border-radius: 8px; 
             border: 1px solid var(--card-border); 
             position: relative;
             cursor: pointer;
         }
         .stat-box:active { opacity: 0.7; }
-        .stat-box h4 { margin: 0 0 5px; font-size: 11px; color: var(--text-sub); text-transform: uppercase; }
-        .stat-box span { font-size: 18px; font-weight: 700; color: var(--text); }
-        .unit { font-size: 12px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
-        .edit-icon { position: absolute; top: 10px; right: 10px; font-size: 14px; opacity: 0.5; }
         
-        /* Special Boxes */
+        /* Kleinere Schriften für Kompaktheit */
+        .stat-box h4 { margin: 0 0 2px; font-size: 10px; color: var(--text-sub); text-transform: uppercase; }
+        .stat-box span { font-size: 16px; font-weight: 700; color: var(--text); }
+        .unit { font-size: 10px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
+        .edit-icon { position: absolute; top: 6px; right: 6px; font-size: 12px; opacity: 0.5; }
+        
         .stat-box.summary { border-color: #555; background: #2c2c2e; cursor: default; }
         .stat-box.summary h4 { color: var(--accent); font-weight: bold; }
         
-        .stat-box.full-width { grid-column: span 2; cursor: default; }
-        .stat-box.full-width h4 { color: var(--accent); }
+        /* UPCOMING BOX KOMPAKT */
+        .stat-box.full-width { grid-column: span 2; cursor: default; padding-bottom: 4px; }
+        .stat-box.full-width h4 { color: var(--accent); margin-bottom: 4px; font-size: 11px;}
         .upcoming-list { list-style: none; padding: 0; margin: 0; }
-        .upcoming-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; }
+        .upcoming-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
         .upcoming-item:last-child { border-bottom: none; }
-        .u-date { color: var(--text-sub); font-size: 12px; width: 80px; }
-        .u-name { font-weight: 600; text-align: right; flex: 1; }
+        .u-date { color: var(--text-sub); font-size: 11px; width: 70px; }
+        .u-name { font-weight: 600; text-align: right; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
         /* KALENDER STYLES */
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
@@ -199,7 +202,6 @@
         .modal-title { font-size: 18px; font-weight: 700; }
         .close-btn { background: none; border: none; font-size: 24px; color: var(--text-sub); cursor: pointer; }
         
-        /* Modal Add Section */
         .modal-add-area { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
         .modal-add-title { font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
         .modal-color-row { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
@@ -308,12 +310,12 @@
         </div>
 
         <div id="view-stats" class="view">
-            <div style="text-align:center; margin-bottom:10px; font-size:12px; color:#666;">Tippe auf eine Box (außer Gesamt), um den Wert zu ändern.</div>
+            <div style="text-align:center; margin-bottom:5px; font-size:11px; color:#666;">Tippe auf Box zum Ändern.</div>
             <div class="stats-grid" id="stats-grid"></div>
             
             <div class="data-tools">
-                <button class="btn-small" onclick="exportData()">💾 Backup speichern</button>
-                <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Backup laden</button>
+                <button class="btn-small" onclick="exportData()">💾 Backup</button>
+                <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Laden</button>
                 <input type="file" id="file-upload" accept=".json" style="display:none" onchange="importData(this)">
             </div>
             <div style="margin-top:20px;">
@@ -332,7 +334,7 @@
             
             <div class="modal-add-area">
                 <div class="modal-add-title">Termin / Dienst eintragen</div>
-                <input type="text" id="modal-note-input" placeholder="Name (z.B. Spätschicht, Zahnarzt)" style="margin-bottom:10px; font-size:14px;">
+                <input type="text" id="modal-note-input" placeholder="Name (z.B. Spätschicht)" style="margin-bottom:10px; font-size:14px;">
                 <div class="modal-color-row">
                     <div class="modal-color-btn selected" style="background-color: var(--note-pink)" onclick="selectModalColor(this, 'pink')"></div>
                     <div class="modal-color-btn" style="background-color: var(--note-teal)" onclick="selectModalColor(this, 'teal')"></div>
@@ -496,7 +498,9 @@
                 const d1 = document.getElementById('date-start').value;
                 const d2 = document.getElementById('date-end').value;
                 const days = parseFloat(document.getElementById('calc-days-val').value);
-                if (isNaN(days)) { alert('Tage prüfen'); return; }
+                // V16: 0 Tage erlaubt, auch negativ für Korrekturen denkbar
+                if (isNaN(days) || days < 0) { alert('Tage prüfen'); return; }
+                
                 displayDate = (d1 === d2) ? formatDateDE(d1) : formatDateDE(d1) + " - " + formatDateDE(d2);
                 displayTime = days + " Tag(e)";
                 hoursValue = days * HOURS_PER_DAY;
@@ -626,12 +630,10 @@
                 
                 let showDate = e.date;
                 if(showDate.match(/^\d{4}-\d{2}-\d{2}$/)) showDate = formatDateDE(showDate);
-
-                // Wenn Termin, zeigen wir den "Note" text als Titel an, weils der Name ist
+                
                 let displayTitle = e.cat;
                 if(e.cat === 'Termin' && e.note) displayTitle = e.note; 
 
-                // Wenn Termin, dann keine Note unten drunter, da sie oben steht
                 let noteHtml = (e.cat !== 'Termin' && e.note) ? `<div class="h-note">${e.note}</div>` : '';
 
                 let item = `
@@ -654,30 +656,43 @@
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
 
-            // --- UPCOMING EVENTS ---
+            // --- UPCOMING EVENTS (Alles ab heute) ---
             const today = new Date().toISOString().slice(0,10);
+            
+            // Filter: Alle Einträge in der Zukunft
             const upcoming = entries
                 .filter(e => {
                     ensureIsoDates(e);
-                    return e.cat === 'Termin' && e.isoStart >= today;
+                    // Prüfen ob End-Datum >= Heute ist
+                    return e.isoEnd >= today;
                 })
                 .sort((a,b) => a.isoStart.localeCompare(b.isoStart))
-                .slice(0, 3); // Max 3
+                .slice(0, 3); // Top 3
 
             let upcomingBox = document.createElement('div');
             upcomingBox.className = 'stat-box full-width';
             let listHtml = '';
             if(upcoming.length > 0) {
                 upcoming.forEach(u => {
+                    let label = u.cat;
+                    // Bei Termin nehmen wir die Note als Label
+                    if(u.cat === 'Termin' && u.note) label = u.note;
+                    
+                    // Farbe setzen
+                    let col = 'white';
+                    if(u.color) col = u.color;
+                    else if(u.cat === 'Urlaub') col = 'var(--c-urlaub)';
+                    else if(u.cat === 'Stunden') col = 'var(--c-stunden)';
+                    
                     listHtml += `
                         <li class="upcoming-item">
                             <span class="u-date">${formatDateDE(u.isoStart).slice(0,6)}</span>
-                            <span class="u-name" style="color:${u.color || 'white'}">${u.note || 'Termin'}</span>
+                            <span class="u-name" style="color:${col}">${label}</span>
                         </li>
                     `;
                 });
             } else {
-                listHtml = '<li class="upcoming-item" style="color:#666; justify-content:center;">Keine anstehenden Termine</li>';
+                listHtml = '<li class="upcoming-item" style="color:#666; justify-content:center;">Keine Einträge</li>';
             }
             upcomingBox.innerHTML = `<h4>Kommende Termine</h4><ul class="upcoming-list">${listHtml}</ul>`;
             grid.appendChild(upcomingBox);
@@ -701,13 +716,13 @@
             let boxDays = document.createElement('div');
             boxDays.className = 'stat-box summary';
             let colD = totalDays >= 0 ? '#fff' : '#ff453a';
-            boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/HOURS_PER_DAY)}<span class="unit">Gesamt</span></span>`;
+            boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/HOURS_PER_DAY)}<span class="unit">Ges</span></span>`;
             grid.appendChild(boxDays);
 
             let boxHours = document.createElement('div');
             boxHours.className = 'stat-box summary';
             let colH = totalHours >= 0 ? '#fff' : '#ff453a';
-            boxHours.innerHTML = `<h4>∑ Stunden</h4><span style="color:${colH}">${formatNumber(totalHours)}<span class="unit">Gesamt</span></span>`;
+            boxHours.innerHTML = `<h4>∑ Stunden</h4><span style="color:${colH}">${formatNumber(totalHours)}<span class="unit">Ges</span></span>`;
             grid.appendChild(boxHours);
 
             const categories = [
@@ -833,7 +848,6 @@
                         if(showMark) {
                             cell.classList.add('has-event');
                             
-                            // Custom Color hat Vorrang
                             if(primary.color) {
                                 cell.style.backgroundColor = primary.color;
                                 cell.style.color = 'white'; 
@@ -932,21 +946,20 @@
             
             const newEntry = {
                 id: Date.now(),
-                cat: 'Termin', // Eigene Kategorie für Termine
+                cat: 'Termin',
                 date: formatDateDE(modalCurrentIsoDate),
                 isoStart: modalCurrentIsoDate,
                 isoEnd: modalCurrentIsoDate,
                 timeDesc: "Termin",
                 hours: 0,
                 mode: 'note',
-                note: text, // Hier speichern wir den Namen
+                note: text,
                 color: colorCode
             };
             
             entries.unshift(newEntry);
             localStorage.setItem('trackData_v5', JSON.stringify(entries));
             
-            // Refresh Modal content without closing
             openModal(modalCurrentIsoDate, getEventsForDate(modalCurrentIsoDate));
             updateUI(); 
         }
@@ -967,7 +980,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v15_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v16_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
