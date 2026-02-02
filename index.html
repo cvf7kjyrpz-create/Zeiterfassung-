@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V10">
-    <title>Arbeitszeit Tracker V10</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V12">
+    <title>Arbeitszeit Tracker V12</title>
 
     <style>
         :root {
@@ -134,11 +134,14 @@
         .unit { font-size: 12px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
         .edit-icon { position: absolute; top: 10px; right: 10px; font-size: 14px; opacity: 0.5; }
 
+        /* Spezielle Gesamt-Boxen */
+        .stat-box.summary { border-color: #555; background: #2c2c2e; cursor: default; }
+        .stat-box.summary h4 { color: var(--accent); font-weight: bold; }
+
         /* KALENDER STYLES */
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
         
-        /* Kalender Filter Switch */
         .cal-filter-container {
             display: flex; gap: 5px; margin-bottom: 15px; justify-content: center;
         }
@@ -159,7 +162,7 @@
 
         .calendar-grid {
             display: grid;
-            grid-template-columns: 1fr; /* Portrait: 1 Monat pro Zeile */
+            grid-template-columns: 1fr; 
             gap: 20px;
         }
         @media (orientation: landscape) {
@@ -183,7 +186,6 @@
         }
         .day-cell.empty { background: none; pointer-events: none; }
         
-        /* Marker Farben im Kalender */
         .has-event { background-color: #333; color: white; font-weight: bold; }
         .mark-urlaub { background-color: var(--c-urlaub); color: black; }
         .mark-stunden { background-color: var(--c-stunden); color: white; }
@@ -302,8 +304,7 @@
                 <div class="cal-filter-btn" onclick="setCalFilter('earned', this)">Erhalten (+)</div>
             </div>
 
-            <div class="calendar-grid" id="calendar-root">
-                </div>
+            <div class="calendar-grid" id="calendar-root"></div>
             <div style="height: 50px;"></div>
         </div>
 
@@ -313,7 +314,7 @@
         </div>
 
         <div id="view-stats" class="view">
-            <div style="text-align:center; margin-bottom:10px; font-size:12px; color:#666;">Tippe auf eine Box, um den Wert zu ändern.</div>
+            <div style="text-align:center; margin-bottom:10px; font-size:12px; color:#666;">Tippe auf eine Box (außer Gesamt), um den Wert zu ändern.</div>
             <div class="stats-grid" id="stats-grid"></div>
             
             <div class="data-tools">
@@ -349,7 +350,7 @@
         let mode = 'taken'; 
         const HOURS_PER_DAY = 8; 
         let currentCalYear = new Date().getFullYear();
-        let calendarFilter = 'all'; // 'all', 'taken', 'earned'
+        let calendarFilter = 'all';
 
         const SCHEDULE = {
             1: { s: "07:00", e: "17:30" }, 
@@ -365,12 +366,10 @@
             if(document.getElementById('date-start')) document.getElementById('date-start').value = today;
             if(document.getElementById('date-end')) document.getElementById('date-end').value = today;
             if(document.getElementById('date-manual')) document.getElementById('date-manual').value = today;
-            
             updateForm();
             updateUI();
         };
 
-        // --- CORE FUNCTIONS ---
         function formatDateDE(isoDate) {
             if(!isoDate) return "";
             if(isoDate.includes('.') && isoDate.length === 10) return isoDate;
@@ -445,7 +444,6 @@
             document.getElementById('calc-days-val').value = count;
         }
 
-        // --- ENTRY SAVING ---
         function saveEntry() {
             const cat = document.getElementById('inp-cat').value;
             const note = document.getElementById('inp-note').value;
@@ -618,6 +616,38 @@
         function renderStats() {
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
+
+            // --- SUMMEN ---
+            let totalDays = 0;
+            let totalHours = 0;
+
+            entries.forEach(e => {
+                let val = e.hours;
+                if(e.mode === 'taken') val = -val;
+                
+                // KORREKTUR V12: Kindkrank NICHT mitzählen bei Gesamtsumme
+                if(['Urlaub','DA','Sonderurlaub'].includes(e.cat)) {
+                    totalDays += val;
+                } else if(['Stunden', 'Langzeitkonto'].includes(e.cat)) {
+                    totalHours += val;
+                }
+            });
+
+            // Box: Gesamt Tage
+            let boxDays = document.createElement('div');
+            boxDays.className = 'stat-box summary';
+            let colD = totalDays >= 0 ? '#fff' : '#ff453a';
+            boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/HOURS_PER_DAY)}<span class="unit">Gesamt</span></span>`;
+            grid.appendChild(boxDays);
+
+            // Box: Gesamt Stunden
+            let boxHours = document.createElement('div');
+            boxHours.className = 'stat-box summary';
+            let colH = totalHours >= 0 ? '#fff' : '#ff453a';
+            boxHours.innerHTML = `<h4>∑ Stunden</h4><span style="color:${colH}">${formatNumber(totalHours)}<span class="unit">Gesamt</span></span>`;
+            grid.appendChild(boxHours);
+
+            // --- KATEGORIEN ---
             const categories = [
                 { name: 'Urlaub', unit: 'Tage' },
                 { name: 'Stunden', unit: 'Std' },
@@ -670,16 +700,13 @@
 
         function getEventsForDate(isoDate) {
             return entries.filter(e => {
-                // Erst Datumscheck
                 ensureIsoDates(e);
                 if(!e.isoStart) return false;
                 const matchesDate = isoDate >= e.isoStart && isoDate <= e.isoEnd;
                 
-                // Dann Filtercheck
                 if(calendarFilter === 'all') return matchesDate;
                 if(calendarFilter === 'taken') return matchesDate && e.mode === 'taken';
                 if(calendarFilter === 'earned') return matchesDate && e.mode === 'earned';
-                
                 return false;
             });
         }
@@ -693,12 +720,10 @@
             for (let i = 0; i < 12; i++) {
                 const monthDiv = document.createElement('div');
                 monthDiv.className = 'month-card';
-                
                 const title = document.createElement('div');
                 title.className = 'month-name';
                 title.innerText = months[i];
                 monthDiv.appendChild(title);
-
                 const daysGrid = document.createElement('div');
                 daysGrid.className = 'days-grid';
 
@@ -710,7 +735,7 @@
                     daysGrid.appendChild(l);
                 });
 
-                const firstDay = new Date(currentCalYear, i, 1).getDay(); // 0=So, 1=Mo
+                const firstDay = new Date(currentCalYear, i, 1).getDay();
                 let startOffset = firstDay === 0 ? 6 : firstDay - 1;
                 const daysInMonth = new Date(currentCalYear, i + 1, 0).getDate();
 
@@ -737,12 +762,12 @@
                         let primary = dayEvents[0];
                         let showMark = true;
                         
-                        // Nur Werktage markieren bei Urlaub (außer Filter ist an, dann vielleicht auch?)
-                        // Wir behalten die Logik: Wochenende nur markieren wenn es kein Urlaub/Sonderurlaub ist
-                        if(primary.cat.startsWith('Urlaub') || primary.cat.startsWith('Sonder')) {
-                            if(dayOfWeek === 0 || dayOfWeek === 6) showMark = false;
+                        if(calendarFilter === 'all') {
+                             if(primary.cat.startsWith('Urlaub') || primary.cat.startsWith('Sonder')) {
+                                if(dayOfWeek === 0 || dayOfWeek === 6) showMark = false;
+                            }
                         }
-
+                        
                         if(showMark) {
                             cell.classList.add('has-event');
                             if(primary.cat.startsWith('Urlaub')) cell.classList.add('mark-urlaub');
@@ -792,7 +817,7 @@
                     body.appendChild(row);
                 });
             } else {
-                body.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">Keine Einträge.</div>';
+                body.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">Keine Einträge für diesen Filter.</div>';
             }
             document.getElementById('day-modal').classList.add('open');
         }
@@ -813,7 +838,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v10_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v12_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
