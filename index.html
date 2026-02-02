@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V12">
-    <title>Arbeitszeit Tracker V12</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V13">
+    <title>Arbeitszeit Tracker V13</title>
 
     <style>
         :root {
@@ -18,7 +18,7 @@
             --input: #1c1c1e;
             --accent: #0A84FF;
             
-            /* Kategorie Farben */
+            /* Kategorie Farben (Standard) */
             --c-urlaub: #FF9F0A; 
             --c-stunden: #0A84FF;
             --c-krank: #FF453A;
@@ -87,6 +87,13 @@
         .btn-primary { background-color: var(--card-border); color: var(--accent); }
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
 
+        /* Color Picker */
+        .color-picker-row { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;}
+        .color-circle {
+            width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; flex-shrink: 0;
+        }
+        .color-circle.selected { border-color: white; transform: scale(1.1); }
+
         /* Toggle Switch (Allgemein) */
         .toggle-container {
             display: flex; background: var(--card); border-radius: 8px; padding: 2px; margin-bottom: 15px; border: 1px solid var(--card-border);
@@ -103,6 +110,7 @@
         .history-item {
             background-color: var(--card); padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #555; position: relative;
         }
+        /* Standard Farben Fallback */
         .cat-urlaub { border-left-color: var(--c-urlaub); }
         .cat-stunden { border-left-color: var(--c-stunden); }
         .cat-kindkrank { border-left-color: var(--c-krank); }
@@ -133,8 +141,6 @@
         .stat-box span { font-size: 18px; font-weight: 700; color: var(--text); }
         .unit { font-size: 12px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
         .edit-icon { position: absolute; top: 10px; right: 10px; font-size: 14px; opacity: 0.5; }
-
-        /* Spezielle Gesamt-Boxen */
         .stat-box.summary { border-color: #555; background: #2c2c2e; cursor: default; }
         .stat-box.summary h4 { color: var(--accent); font-weight: bold; }
 
@@ -142,32 +148,14 @@
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
         
-        .cal-filter-container {
-            display: flex; gap: 5px; margin-bottom: 15px; justify-content: center;
-        }
+        .cal-filter-container { display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; }
         .cal-filter-btn {
-            padding: 6px 12px;
-            background-color: var(--card);
-            border: 1px solid var(--card-border);
-            border-radius: 15px;
-            font-size: 12px;
-            color: var(--text-sub);
-            cursor: pointer;
+            padding: 6px 12px; background-color: var(--card); border: 1px solid var(--card-border); border-radius: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer;
         }
-        .cal-filter-btn.active {
-            background-color: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
+        .cal-filter-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
 
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: 1fr; 
-            gap: 20px;
-        }
-        @media (orientation: landscape) {
-            .calendar-grid { grid-template-columns: 1fr 1fr 1fr; }
-        }
+        .calendar-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (orientation: landscape) { .calendar-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
         .month-card { background-color: var(--card); padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); }
         .month-name { text-align: center; font-weight: 600; margin-bottom: 10px; color: var(--text-sub); text-transform: uppercase; font-size: 12px; }
@@ -175,17 +163,11 @@
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .day-label { font-size: 9px; color: #555; padding-bottom: 5px; }
         .day-cell { 
-            aspect-ratio: 1; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-size: 12px; 
-            border-radius: 4px;
-            position: relative;
-            cursor: pointer;
+            aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 12px; border-radius: 4px; position: relative; cursor: pointer;
         }
         .day-cell.empty { background: none; pointer-events: none; }
         
+        /* Marker Farben - Standard */
         .has-event { background-color: #333; color: white; font-weight: bold; }
         .mark-urlaub { background-color: var(--c-urlaub); color: black; }
         .mark-stunden { background-color: var(--c-stunden); color: white; }
@@ -196,21 +178,19 @@
         
         /* POPUP MODAL */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-            z-index: 1000;
-            display: none;
-            justify-content: center; align-items: center;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center;
         }
         .modal-overlay.open { display: flex; }
         .modal-content {
-            background: var(--card); width: 85%; max-width: 400px;
-            padding: 20px; border-radius: 16px; border: 1px solid var(--card-border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: var(--card); width: 85%; max-width: 400px; padding: 20px; border-radius: 16px; border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;}
         .modal-title { font-size: 18px; font-weight: 700; }
         .close-btn { background: none; border: none; font-size: 24px; color: var(--text-sub); cursor: pointer; }
+        
+        .modal-add-btn {
+            background-color: var(--accent); color: white; width: 100%; border: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer;
+        }
 
         /* Tools */
         .data-tools { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border); display: flex; gap: 10px; }
@@ -268,7 +248,7 @@
                     <div class="input-col"><label>Bis Tag (inkl.)</label><input type="date" id="date-end" onchange="calcDaysDiff()"></div>
                 </div>
                 <div class="input-row">
-                    <div class="input-col"><label>Anzahl Tage (Mo-Fr)</label><input type="number" id="calc-days-val" value="0"></div>
+                    <div class="input-col"><label>Anzahl Tage</label><input type="number" id="calc-days-val" value="0"></div>
                 </div>
             </div>
 
@@ -279,6 +259,12 @@
                 <div class="input-row">
                     <div class="input-col"><label id="lbl-amount">Menge</label><input type="number" id="inp-amount" placeholder="z.B. 8" step="0.1"></div>
                 </div>
+            </div>
+
+            <div class="input-row" style="display:block;">
+                <label>Farbe (Optional)</label>
+                <div class="color-picker-row" id="color-picker">
+                    </div>
             </div>
 
             <div class="input-row">
@@ -335,6 +321,7 @@
                 <button class="close-btn" onclick="closeModalDirect()">×</button>
             </div>
             <div id="modal-body"></div>
+            <button class="modal-add-btn" onclick="addEntryFromModal()">+ Neuer Eintrag</button>
         </div>
     </div>
 
@@ -351,6 +338,21 @@
         const HOURS_PER_DAY = 8; 
         let currentCalYear = new Date().getFullYear();
         let calendarFilter = 'all';
+        let selectedColor = null; // Aktuell gewählte Farbe
+        let modalCurrentIsoDate = null; // Für "Hinzufügen" aus Modal
+
+        // Farbpalette
+        const COLORS = [
+            {code: null, label: 'Std'}, // Standard (Kategorie)
+            {code: '#FF3B30', label: 'Rot'},
+            {code: '#FF9500', label: 'Orange'},
+            {code: '#FFCC00', label: 'Gelb'},
+            {code: '#34C759', label: 'Grün'},
+            {code: '#007AFF', label: 'Blau'},
+            {code: '#AF52DE', label: 'Lila'},
+            {code: '#8E8E93', label: 'Grau'},
+            {code: '#FF2D55', label: 'Pink'}
+        ];
 
         const SCHEDULE = {
             1: { s: "07:00", e: "17:30" }, 
@@ -366,9 +368,38 @@
             if(document.getElementById('date-start')) document.getElementById('date-start').value = today;
             if(document.getElementById('date-end')) document.getElementById('date-end').value = today;
             if(document.getElementById('date-manual')) document.getElementById('date-manual').value = today;
+            
+            initColorPicker();
             updateForm();
             updateUI();
         };
+
+        function initColorPicker() {
+            const container = document.getElementById('color-picker');
+            container.innerHTML = '';
+            COLORS.forEach(c => {
+                let div = document.createElement('div');
+                div.className = 'color-circle';
+                if(c.code) div.style.backgroundColor = c.code;
+                else {
+                    div.style.border = '2px solid #555';
+                    div.innerText = '✖'; // Reset Icon
+                    div.style.display = 'flex';
+                    div.style.justifyContent = 'center';
+                    div.style.alignItems = 'center';
+                    div.style.color = '#555';
+                }
+                
+                div.onclick = () => {
+                    selectedColor = c.code;
+                    document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                };
+                container.appendChild(div);
+            });
+            // Default select erste
+            container.firstChild.classList.add('selected');
+        }
 
         function formatDateDE(isoDate) {
             if(!isoDate) return "";
@@ -456,7 +487,7 @@
             if (!document.getElementById('section-manual').classList.contains('hidden')) {
                 const val = parseFloat(document.getElementById('inp-amount').value);
                 const d = document.getElementById('date-manual').value;
-                if (!val || !d) { alert('Bitte Menge prüfen'); return; }
+                if (isNaN(val) || !d) { alert('Bitte Menge prüfen'); return; }
                 displayDate = formatDateDE(d);
                 displayTime = "Pauschal";
                 hoursValue = (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) ? val * HOURS_PER_DAY : val;
@@ -478,7 +509,8 @@
                 const d1 = document.getElementById('date-start').value;
                 const d2 = document.getElementById('date-end').value;
                 const days = parseFloat(document.getElementById('calc-days-val').value);
-                if (days <= 0) { alert('0 Tage?'); return; }
+                // V13: Erlaube 0 Tage
+                if (isNaN(days)) { alert('Tage prüfen'); return; }
                 displayDate = (d1 === d2) ? formatDateDE(d1) : formatDateDE(d1) + " - " + formatDateDE(d2);
                 displayTime = days + " Tag(e)";
                 hoursValue = days * HOURS_PER_DAY;
@@ -494,7 +526,8 @@
                 timeDesc: displayTime,
                 hours: hoursValue,
                 mode: mode,
-                note: note
+                note: note,
+                color: selectedColor // Neue Eigenschaft
             };
 
             entries.unshift(newEntry);
@@ -502,6 +535,11 @@
             alert('Gespeichert');
             document.getElementById('inp-note').value = "";
             document.getElementById('inp-amount').value = "";
+            // Reset Color
+            selectedColor = null;
+            document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('selected'));
+            document.querySelector('.color-circle').classList.add('selected'); // Reset auf Default
+            
             updateUI();
         }
 
@@ -575,12 +613,19 @@
 
             entries.forEach(e => {
                 let colorClass = '';
-                if(e.cat.startsWith('Urlaub')) colorClass = 'cat-urlaub';
-                else if(e.cat.startsWith('Stunden')) colorClass = 'cat-stunden';
-                else if(e.cat.startsWith('Kind')) colorClass = 'cat-kindkrank';
-                else if(e.cat.startsWith('DA')) colorClass = 'cat-da';
-                else if(e.cat.startsWith('Langzeit')) colorClass = 'cat-lzk';
-                else colorClass = 'cat-sonder';
+                let customStyle = '';
+                
+                // Wenn Custom Color, dann inline style für border
+                if(e.color) {
+                    customStyle = `border-left-color: ${e.color};`;
+                } else {
+                    if(e.cat.startsWith('Urlaub')) colorClass = 'cat-urlaub';
+                    else if(e.cat.startsWith('Stunden')) colorClass = 'cat-stunden';
+                    else if(e.cat.startsWith('Kind')) colorClass = 'cat-kindkrank';
+                    else if(e.cat.startsWith('DA')) colorClass = 'cat-da';
+                    else if(e.cat.startsWith('Langzeit')) colorClass = 'cat-lzk';
+                    else colorClass = 'cat-sonder';
+                }
 
                 let valClass = e.mode === 'taken' ? 'neg' : 'pos';
                 let sign = e.mode === 'taken' ? '-' : '+';
@@ -598,7 +643,7 @@
                 let noteHtml = e.note ? `<div class="h-note">${e.note}</div>` : '';
 
                 let item = `
-                    <div class="history-item ${colorClass}" onclick="deleteEntry(${e.id})">
+                    <div class="history-item ${colorClass}" style="${customStyle}" onclick="deleteEntry(${e.id})">
                         <div class="h-top">
                             <div>
                                 <div class="h-title">${e.cat}</div>
@@ -625,7 +670,6 @@
                 let val = e.hours;
                 if(e.mode === 'taken') val = -val;
                 
-                // KORREKTUR V12: Kindkrank NICHT mitzählen bei Gesamtsumme
                 if(['Urlaub','DA','Sonderurlaub'].includes(e.cat)) {
                     totalDays += val;
                 } else if(['Stunden', 'Langzeitkonto'].includes(e.cat)) {
@@ -633,14 +677,12 @@
                 }
             });
 
-            // Box: Gesamt Tage
             let boxDays = document.createElement('div');
             boxDays.className = 'stat-box summary';
             let colD = totalDays >= 0 ? '#fff' : '#ff453a';
             boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/HOURS_PER_DAY)}<span class="unit">Gesamt</span></span>`;
             grid.appendChild(boxDays);
 
-            // Box: Gesamt Stunden
             let boxHours = document.createElement('div');
             boxHours.className = 'stat-box summary';
             let colH = totalHours >= 0 ? '#fff' : '#ff453a';
@@ -770,12 +812,22 @@
                         
                         if(showMark) {
                             cell.classList.add('has-event');
-                            if(primary.cat.startsWith('Urlaub')) cell.classList.add('mark-urlaub');
-                            else if(primary.cat.startsWith('Stunden')) cell.classList.add('mark-stunden');
-                            else if(primary.cat.startsWith('Kind')) cell.classList.add('mark-krank');
-                            else if(primary.cat.startsWith('DA')) cell.classList.add('mark-da');
-                            else if(primary.cat.startsWith('Lang')) cell.classList.add('mark-lzk');
-                            else if(primary.cat.startsWith('Sonder')) cell.classList.add('mark-sonder');
+                            
+                            // Custom Color hat Vorrang
+                            if(primary.color) {
+                                cell.style.backgroundColor = primary.color;
+                                // Versuche Kontrast zu raten: Bei hellen Farben schwarz, bei dunklen weiß.
+                                // Einfacher Hack: Standard weißer Text, außer bei Gelb/Hellgrau - hier machen wir es simpel.
+                                cell.style.color = 'white'; 
+                                if(primary.color === '#FFCC00') cell.style.color = 'black'; // Gelb Fix
+                            } else {
+                                if(primary.cat.startsWith('Urlaub')) cell.classList.add('mark-urlaub');
+                                else if(primary.cat.startsWith('Stunden')) cell.classList.add('mark-stunden');
+                                else if(primary.cat.startsWith('Kind')) cell.classList.add('mark-krank');
+                                else if(primary.cat.startsWith('DA')) cell.classList.add('mark-da');
+                                else if(primary.cat.startsWith('Lang')) cell.classList.add('mark-lzk');
+                                else if(primary.cat.startsWith('Sonder')) cell.classList.add('mark-sonder');
+                            }
                         }
                     }
 
@@ -790,6 +842,7 @@
 
         // --- POPUP LOGIC ---
         function openModal(isoDate, events) {
+            modalCurrentIsoDate = isoDate; // Speichern für "Add" Button
             const title = document.getElementById('modal-date-title');
             title.innerText = formatDateDE(isoDate);
             const body = document.getElementById('modal-body');
@@ -809,7 +862,10 @@
                     row.style.borderBottom = "1px solid #333";
                     row.style.paddingBottom = "10px";
                     row.innerHTML = `
-                        <div style="font-weight:bold; color:var(--accent)">${e.cat}</div>
+                        <div style="font-weight:bold; color:var(--accent); display:flex; justify-content:space-between;">
+                            ${e.cat}
+                            ${e.color ? `<div style="width:12px; height:12px; border-radius:50%; background:${e.color};"></div>` : ''}
+                        </div>
                         <div style="font-size:13px; color:#aaa">${e.timeDesc}</div>
                         <div style="margin-top:2px;">${e.mode === 'taken' ? 'Genommen' : 'Erhalten'}: ${displayVal}</div>
                         ${e.note ? `<div style="font-style:italic; font-size:12px; margin-top:4px; color:#888;">"${e.note}"</div>` : ''}
@@ -831,6 +887,24 @@
             document.getElementById('day-modal').classList.remove('open');
         }
 
+        function addEntryFromModal() {
+            if(!modalCurrentIsoDate) return;
+            // Wechsle zu Eingabe View
+            showView('view-input', document.querySelectorAll('.nav-item')[0], 'Eingabe');
+            // Setze Datum
+            if(document.getElementById('date-single')) document.getElementById('date-single').value = modalCurrentIsoDate;
+            if(document.getElementById('date-start')) document.getElementById('date-start').value = modalCurrentIsoDate;
+            if(document.getElementById('date-end')) document.getElementById('date-end').value = modalCurrentIsoDate;
+            if(document.getElementById('date-manual')) document.getElementById('date-manual').value = modalCurrentIsoDate;
+            
+            // Trigger Updates
+            updateForm();
+            autoFillTimes();
+            calcDaysDiff();
+            
+            closeModalDirect();
+        }
+
         // --- IMPORT / EXPORT ---
         function exportData() {
             const dataStr = JSON.stringify(entries);
@@ -838,7 +912,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v12_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v13_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
