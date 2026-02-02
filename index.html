@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit">
-    <title>Arbeitszeit Tracker V4</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V5">
+    <title>Arbeitszeit Tracker V5</title>
 
     <style>
         :root {
@@ -77,21 +77,11 @@
             font-family: inherit;
         }
 
-        textarea {
-            resize: none;
-            height: 60px;
-        }
+        textarea { resize: none; height: 70px; }
         
         /* Buttons */
         .btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 5px;
+            width: 100%; padding: 14px; border-radius: 8px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 5px;
         }
         .btn-primary { background-color: var(--card-border); color: var(--accent); }
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
@@ -101,18 +91,16 @@
             display: flex; background: var(--card); border-radius: 8px; padding: 2px; margin-bottom: 15px; border: 1px solid var(--card-border);
         }
         .toggle-btn {
-            flex: 1; padding: 8px; text-align: center; font-weight: 500; font-size: 13px; border-radius: 6px; transition: 0.2s;
+            flex: 1; padding: 8px; text-align: center; font-weight: 500; font-size: 13px; border-radius: 6px; transition: 0.2s; cursor: pointer;
         }
         .toggle-btn.active { background: #3a3a3c; color: #fff; }
 
+        /* Helper für unsichtbare Bereiche */
+        .hidden { display: none; }
+
         /* VERLAUF LISTE */
         .history-item {
-            background-color: var(--card);
-            padding: 12px 14px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border-left: 4px solid #555;
-            position: relative;
+            background-color: var(--card); padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #555; position: relative;
         }
         .cat-urlaub { border-left-color: var(--c-urlaub); }
         .cat-stunden { border-left-color: var(--c-stunden); }
@@ -127,15 +115,7 @@
         .h-val { font-size: 15px; font-weight: 700; text-align: right; }
         .h-val.neg { color: #ff453a; }
         .h-val.pos { color: #30d158; }
-        
-        .h-note {
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 13px;
-            color: #ddd;
-            font-style: italic;
-        }
+        .h-note { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #ddd; font-style: italic; }
 
         /* STATISTIK GRID */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -160,7 +140,7 @@
 <body>
 
     <header>
-        <h1 id="header-title">Eingabe</h1>
+        <h1 id="header-title">Buchen</h1>
     </header>
 
     <main>
@@ -174,43 +154,78 @@
             <div class="input-row">
                 <div class="input-col">
                     <label>Kategorie</label>
-                    <select id="inp-cat">
-                        <option value="Urlaub">Urlaub</option>
-                        <option value="Stunden">Stunden</option>
-                        <option value="Kindkrank">Kindkrank</option>
+                    <select id="inp-cat" onchange="updateForm()">
+                        <option value="Urlaub">Urlaub (Tage)</option>
+                        <option value="Stunden">Stunden / Überstunden</option>
+                        <option value="Kindkrank">Kindkrank (Tage)</option>
                         <option value="DA">DA Dienstausgleich</option>
-                        <option value="Langzeitkonto">Langzeitkonto</option>
-                        <option value="Sonderurlaub">Sonderurlaub</option>
+                        <option value="Langzeitkonto">Langzeitkonto (Std)</option>
+                        <option value="Sonderurlaub">Sonderurlaub (Tage)</option>
                     </select>
                 </div>
             </div>
 
-            <div class="input-row">
-                <div class="input-col">
-                    <label>Datum (Auto-Zeit)</label>
-                    <input type="date" id="inp-date" onchange="autoFillTimes()">
+            <div id="section-time-range" class="hidden">
+                <div class="input-row">
+                    <div class="input-col">
+                        <label>Datum</label>
+                        <input type="date" id="date-single" onchange="autoFillTimes()">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-col">
+                        <label>Von</label>
+                        <input type="time" id="time-start" value="07:00">
+                    </div>
+                    <div class="input-col">
+                        <label>Bis</label>
+                        <input type="time" id="time-end" value="16:30">
+                    </div>
                 </div>
             </div>
 
-            <div id="time-container" class="input-row">
-                <div class="input-col">
-                    <label>Von</label>
-                    <input type="time" id="inp-start" value="07:00">
+            <div id="section-date-range" class="hidden">
+                <div class="input-row">
+                    <div class="input-col">
+                        <label>Vom Tag</label>
+                        <input type="date" id="date-start" onchange="calcDaysDiff()">
+                    </div>
+                    <div class="input-col">
+                        <label>Bis Tag (inkl.)</label>
+                        <input type="date" id="date-end" onchange="calcDaysDiff()">
+                    </div>
                 </div>
-                <div class="input-col">
-                    <label>Bis</label>
-                    <input type="time" id="inp-end" value="16:30">
+                <div class="input-row">
+                    <div class="input-col">
+                        <label>Berechnete Tage (Mo-Fr)</label>
+                        <input type="number" id="calc-days-val" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-manual" class="hidden">
+                <div class="input-row">
+                    <div class="input-col">
+                        <label>Buchungsdatum</label>
+                        <input type="date" id="date-manual">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-col">
+                        <label id="lbl-amount">Menge (Stunden/Tage)</label>
+                        <input type="number" id="inp-amount" placeholder="z.B. 8" step="0.1">
+                    </div>
                 </div>
             </div>
 
             <div class="input-row">
                 <div class="input-col">
                     <label>Begründung / Notiz</label>
-                    <textarea id="inp-note" placeholder="z.B. Arzttermin, 24h Dienst..."></textarea>
+                    <textarea id="inp-note" placeholder="Grund für Eintrag..."></textarea>
                 </div>
             </div>
 
-            <button class="btn btn-primary" onclick="saveEntry()">Eintrag Speichern</button>
+            <button class="btn btn-primary" onclick="saveEntry()">Buchen</button>
         </div>
 
         <div id="view-history" class="view">
@@ -221,8 +236,8 @@
         <div id="view-stats" class="view">
             <div class="stats-grid" id="stats-grid"></div>
             <div class="data-tools">
-                <button class="btn-small" onclick="exportData()">💾 Backup speichern</button>
-                <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Backup laden</button>
+                <button class="btn-small" onclick="exportData()">💾 Backup</button>
+                <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Laden</button>
                 <input type="file" id="file-upload" style="display:none" onchange="importData(this)">
             </div>
             <div style="margin-top:20px;">
@@ -238,23 +253,29 @@
     </nav>
 
     <script>
-        // DATENSPEICHER (Nutz v3 Speicher weiter, da Struktur gleich)
-        let entries = JSON.parse(localStorage.getItem('trackData_v3')) || [];
+        // DATENSPEICHER (Neue Version v5 für sauberen Start, kann alte Daten aber nicht lesen ohne Import)
+        let entries = JSON.parse(localStorage.getItem('trackData_v5')) || [];
         let mode = 'taken'; // 'taken' or 'earned'
         const HOURS_PER_DAY = 8; 
 
-        // DEIN SCHICHTPLAN (Mo-Fr)
+        // ARBEITSZEITEN FÜR STUNDEN-KALKULATION (Mo-Fr)
         const SCHEDULE = {
-            1: { s: "07:00", e: "17:30" }, // Montag
-            2: { s: "07:00", e: "16:30" }, // Dienstag
-            3: { s: "07:00", e: "15:30" }, // Mittwoch
-            4: { s: "07:00", e: "16:30" }, // Donnerstag
-            5: { s: "07:00", e: "11:00" }  // Freitag
+            1: { s: "07:00", e: "17:30" }, // Mo
+            2: { s: "07:00", e: "16:30" }, // Di
+            3: { s: "07:00", e: "15:30" }, // Mi
+            4: { s: "07:00", e: "16:30" }, // Do
+            5: { s: "07:00", e: "11:00" }  // Fr
         };
 
         window.onload = function() {
-            document.getElementById('inp-date').valueAsDate = new Date();
-            autoFillTimes();
+            // Datum Felder auf Heute setzen
+            const today = new Date().toISOString().slice(0,10);
+            document.getElementById('date-single').value = today;
+            document.getElementById('date-start').value = today;
+            document.getElementById('date-end').value = today;
+            document.getElementById('date-manual').value = today;
+            
+            updateForm();
             updateUI();
         };
 
@@ -262,77 +283,160 @@
             mode = m;
             document.getElementById('btn-taken').classList.toggle('active', m === 'taken');
             document.getElementById('btn-earned').classList.toggle('active', m === 'earned');
+            updateForm();
         }
 
-        // Automatisch Zeiten setzen
-        function autoFillTimes() {
-            const dateInput = document.getElementById('inp-date');
-            if(!dateInput.value) return;
-
-            const date = new Date(dateInput.value);
-            const dayOfWeek = date.getDay(); 
+        // Steuert, welche Felder sichtbar sind
+        function updateForm() {
+            const cat = document.getElementById('inp-cat').value;
             
+            // Container
+            const cTime = document.getElementById('section-time-range');
+            const cDate = document.getElementById('section-date-range');
+            const cManual = document.getElementById('section-manual');
+            const lblAmount = document.getElementById('lbl-amount');
+
+            // Reset Visibility
+            cTime.classList.add('hidden');
+            cDate.classList.add('hidden');
+            cManual.classList.add('hidden');
+
+            // LOGIK
+            if (mode === 'earned') {
+                // Wenn man etwas BEKOMMT: Immer manuelles Feld
+                cManual.classList.remove('hidden');
+                // Label anpassen
+                if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) {
+                    lblAmount.innerText = "Menge (Tage)";
+                } else {
+                    lblAmount.innerText = "Menge (Stunden)";
+                }
+
+            } else {
+                // Wenn man etwas NIMMT (taken)
+                if (cat === 'Stunden' || cat === 'Langzeitkonto') {
+                    // Zeit-Bereich zeigen
+                    cTime.classList.remove('hidden');
+                    autoFillTimes(); // Zeiten neu berechnen für gewählten Tag
+                } else {
+                    // Urlaubs-Bereich (Von Tag bis Tag) zeigen
+                    cDate.classList.remove('hidden');
+                }
+            }
+        }
+
+        function autoFillTimes() {
+            const dateInput = document.getElementById('date-single');
+            if(!dateInput.value) return;
+            const dayOfWeek = new Date(dateInput.value).getDay();
             const plan = SCHEDULE[dayOfWeek];
             if(plan) {
-                document.getElementById('inp-start').value = plan.s;
-                document.getElementById('inp-end').value = plan.e;
+                document.getElementById('time-start').value = plan.s;
+                document.getElementById('time-end').value = plan.e;
             }
+        }
+
+        // Berechnet Tage zwischen zwei Daten (nur Mo-Fr)
+        function calcDaysDiff() {
+            const sStr = document.getElementById('date-start').value;
+            const eStr = document.getElementById('date-end').value;
+            if(!sStr || !eStr) return;
+
+            let dStart = new Date(sStr);
+            let dEnd = new Date(eStr);
+            
+            let count = 0;
+            let current = new Date(dStart);
+
+            while (current <= dEnd) {
+                const day = current.getDay();
+                if (day !== 0 && day !== 6) { // Nicht So(0) und nicht Sa(6)
+                    count++;
+                }
+                current.setDate(current.getDate() + 1);
+            }
+            document.getElementById('calc-days-val').value = count;
         }
 
         function saveEntry() {
             const cat = document.getElementById('inp-cat').value;
-            const date = document.getElementById('inp-date').value;
-            const start = document.getElementById('inp-start').value;
-            const end = document.getElementById('inp-end').value;
             const note = document.getElementById('inp-note').value;
-
-            if(!date || !start || !end) { alert("Bitte Datum und Zeit prüfen."); return; }
-
-            // Dauer berechnen
-            let dur = calcDuration(start, end);
             
+            let hoursValue = 0;
+            let displayDate = "";
+            let displayTime = ""; // Text für Verlauf
+
+            // DATEN SAMMELN JE NACH SICHTBAREM FELD
+            if (!document.getElementById('section-manual').classList.contains('hidden')) {
+                // --- MANUELL (ERHALTEN) ---
+                const val = parseFloat(document.getElementById('inp-amount').value);
+                const d = document.getElementById('date-manual').value;
+                if (!val || !d) { alert('Bitte Menge und Datum prüfen'); return; }
+                
+                displayDate = d;
+                displayTime = "Pauschal";
+
+                // Umrechnung für Speicher: Wir speichern alles in Stunden
+                if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) {
+                    hoursValue = val * HOURS_PER_DAY;
+                } else {
+                    hoursValue = val;
+                }
+
+            } else if (!document.getElementById('section-time-range').classList.contains('hidden')) {
+                // --- ZEITRAUM (STUNDEN NEHMEN) ---
+                const d = document.getElementById('date-single').value;
+                const t1 = document.getElementById('time-start').value;
+                const t2 = document.getElementById('time-end').value;
+                
+                let s = t1.split(':').map(Number);
+                let e = t2.split(':').map(Number);
+                let diff = (e[0]*60 + e[1]) - (s[0]*60 + s[1]);
+                if(diff === 0) diff = 24 * 60; // 24h bei gleicher Zeit
+                if(diff < 0) diff += 1440; // über Nacht
+
+                hoursValue = diff / 60;
+                displayDate = d;
+                displayTime = `${t1} - ${t2}`;
+
+            } else if (!document.getElementById('section-date-range').classList.contains('hidden')) {
+                // --- DATUMSPANNE (URLAUB NEHMEN) ---
+                const d1 = document.getElementById('date-start').value;
+                const d2 = document.getElementById('date-end').value;
+                const days = parseFloat(document.getElementById('calc-days-val').value);
+                
+                if (days <= 0) { alert('0 Tage ausgewählt?'); return; }
+
+                displayDate = d1; 
+                if (d1 !== d2) displayDate += " bis " + d2;
+                
+                displayTime = days + " Tag(e)";
+                hoursValue = days * HOURS_PER_DAY;
+            }
+
             const newEntry = {
                 id: Date.now(),
                 cat: cat,
-                date: date,
-                start: start,
-                end: end,
-                hours: dur,
+                date: displayDate, // Wir speichern Datum als String
+                timeDesc: displayTime,
+                hours: hoursValue,
                 mode: mode,
                 note: note
             };
 
             entries.unshift(newEntry);
-            localStorage.setItem('trackData_v3', JSON.stringify(entries));
+            localStorage.setItem('trackData_v5', JSON.stringify(entries));
             
             alert('Gespeichert');
             document.getElementById('inp-note').value = "";
+            document.getElementById('inp-amount').value = "";
             updateUI();
-        }
-
-        function calcDuration(start, end) {
-            let s = start.split(':').map(Number);
-            let e = end.split(':').map(Number);
-            let minS = s[0]*60 + s[1];
-            let minE = e[0]*60 + e[1];
-            let diff = minE - minS;
-
-            // Logik für 24h und Übernacht
-            if (diff === 0) {
-                // Wenn Start == Ende (z.B. 07:00 bis 07:00), gehen wir von 24h aus
-                return 24.0;
-            } else if (diff < 0) {
-                // Wenn Ende vor Start liegt (z.B. 20:00 bis 06:00), ist es über Nacht
-                diff += 1440; 
-            }
-            
-            return diff / 60;
         }
 
         function deleteEntry(id) {
             if(confirm("Löschen?")) {
                 entries = entries.filter(e => e.id !== id);
-                localStorage.setItem('trackData_v3', JSON.stringify(entries));
+                localStorage.setItem('trackData_v5', JSON.stringify(entries));
                 updateUI();
             }
         }
@@ -351,19 +455,24 @@
 
             entries.forEach(e => {
                 let colorClass = '';
-                if(e.cat === 'Urlaub') colorClass = 'cat-urlaub';
-                else if(e.cat === 'Stunden') colorClass = 'cat-stunden';
-                else if(e.cat === 'Kindkrank') colorClass = 'cat-kindkrank';
-                else if(e.cat === 'DA') colorClass = 'cat-da';
-                else if(e.cat === 'Langzeitkonto') colorClass = 'cat-lzk';
+                if(e.cat.startsWith('Urlaub')) colorClass = 'cat-urlaub';
+                else if(e.cat.startsWith('Stunden')) colorClass = 'cat-stunden';
+                else if(e.cat.startsWith('Kind')) colorClass = 'cat-kindkrank';
+                else if(e.cat.startsWith('DA')) colorClass = 'cat-da';
+                else if(e.cat.startsWith('Langzeit')) colorClass = 'cat-lzk';
                 else colorClass = 'cat-sonder';
 
                 let valClass = e.mode === 'taken' ? 'neg' : 'pos';
                 let sign = e.mode === 'taken' ? '-' : '+';
                 
-                let d = new Date(e.date);
-                let dateStr = d.toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', year:'2-digit'});
-                
+                let displayVal = "";
+                // Anzeige je nach Kategorie in Stunden oder Tagen
+                if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
+                    displayVal = (e.hours / HOURS_PER_DAY).toFixed(2) + " d";
+                } else {
+                    displayVal = e.hours.toFixed(2) + " h";
+                }
+
                 let noteHtml = e.note ? `<div class="h-note">${e.note}</div>` : '';
 
                 let item = `
@@ -371,9 +480,9 @@
                         <div class="h-top">
                             <div>
                                 <div class="h-title">${e.cat}</div>
-                                <div class="h-meta">${dateStr} | ${e.start} - ${e.end}</div>
+                                <div class="h-meta">${e.date} | ${e.timeDesc}</div>
                             </div>
-                            <div class="h-val ${valClass}">${sign} ${e.hours.toFixed(2)} h</div>
+                            <div class="h-val ${valClass}">${sign} ${displayVal}</div>
                         </div>
                         ${noteHtml}
                     </div>
@@ -397,7 +506,7 @@
 
             categories.forEach(c => {
                 let sumHours = 0;
-                entries.filter(e => e.cat.startsWith(c.name) || (c.name === 'DA' && e.cat === 'DA Dienstausgleich')).forEach(e => {
+                entries.filter(e => e.cat === c.name).forEach(e => {
                     if(e.mode === 'earned') sumHours += e.hours;
                     else sumHours -= e.hours;
                 });
@@ -427,7 +536,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_zeit_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v5_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -441,14 +550,13 @@
                 try {
                     const json = JSON.parse(e.target.result);
                     if(Array.isArray(json)) {
-                        if(confirm("Daten überschreiben?")) {
+                        if(confirm("Überschreiben?")) {
                             entries = json;
-                            localStorage.setItem('trackData_v3', JSON.stringify(entries));
+                            localStorage.setItem('trackData_v5', JSON.stringify(entries));
                             updateUI();
-                            alert("Geladen.");
                         }
                     }
-                } catch(err) { alert("Fehler"); }
+                } catch(err) { alert("Fehler beim Laden"); }
             };
             reader.readAsText(file);
             input.value = '';
@@ -456,7 +564,7 @@
 
         function resetAll() {
             if(confirm("ALLES löschen?")) {
-                localStorage.removeItem('trackData_v3');
+                localStorage.removeItem('trackData_v5');
                 entries = [];
                 updateUI();
             }
