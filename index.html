@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V23">
-    <title>Arbeitszeit Tracker V23</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V24">
+    <title>Arbeitszeit Tracker V24</title>
 
     <style>
         :root {
@@ -32,6 +32,10 @@
             --note-yellow: #FFD60A;
             --note-purple: #BF5AF2;
             --note-white: #EBEBF5;
+
+            /* Zeit Farben V24 */
+            --past: #FF453A;
+            --future: #30D158;
         }
 
         body {
@@ -94,6 +98,11 @@
         .btn-primary { background-color: var(--card-border); color: var(--accent); }
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
         .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); margin-top: 10px; }
+        
+        /* Extra List Button V24 */
+        .btn-list-view {
+            width: 100%; padding: 10px; background: #333; color: white; border: 1px solid #555; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 15px; cursor: pointer;
+        }
 
         /* Toggle Switch */
         .toggle-container {
@@ -186,38 +195,6 @@
         }
         .cal-filter-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
         
-        /* NEW: LIST VIEW ABOVE CALENDAR */
-        #calendar-list-container {
-            margin-bottom: 20px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid var(--card-border);
-            max-height: 250px; /* Begrenzte Höhe */
-            overflow-y: auto;  /* Scrollbar wenn voll */
-        }
-        .cal-list-header {
-            font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px; position: sticky; top: 0; background: var(--bg); padding-bottom: 5px; border-bottom: 1px solid #222;
-        }
-        .cal-list-item {
-            background-color: var(--card);
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            border: 1px solid var(--card-border);
-        }
-        .cal-list-item:active { background-color: #333; }
-        .cal-list-date {
-            width: 50px;
-            font-size: 12px;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
-        .cal-list-info { flex: 1; display: flex; align-items: center; gap: 8px; }
-        .cal-list-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 2px black; }
-        .cal-list-name { font-weight: 600; font-size: 13px; }
-        
         .calendar-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (orientation: landscape) { .calendar-grid { grid-template-columns: 1fr 1fr 1fr; } }
         .month-card { background-color: var(--card); padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); }
@@ -257,16 +234,13 @@
             box-shadow: 0 0 2px rgba(0,0,0,0.8);
         }
 
-        /* POPUP MODAL */
+        /* POPUP MODAL (Allgemein) */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
         .modal-overlay.open { display: flex; }
         .modal-content { background: var(--card); width: 85%; max-width: 400px; padding: 20px; border-radius: 16px; border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 80vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;}
         .modal-title { font-size: 18px; font-weight: 700; }
         .close-btn { background: none; border: none; font-size: 24px; color: var(--text-sub); cursor: pointer; }
-        
-        .modal-add-area { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
-        .modal-add-title { font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
         
         /* Modal Type Selector */
         .modal-type-selector { display: flex; gap: 5px; margin-bottom: 10px; }
@@ -276,6 +250,34 @@
         .modal-color-row { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
         .modal-color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
         .modal-color-btn.selected { border-color: white; transform: scale(1.1); }
+        
+        .modal-add-area { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
+        .modal-add-title { font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
+
+        /* V24 LIST MODAL STYLES */
+        .list-view-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--card);
+            border: 1px solid #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .list-view-item.past {
+            border-left: 4px solid var(--past);
+            opacity: 0.7;
+        }
+        .list-view-item.future {
+            border-left: 4px solid var(--future);
+            border-color: #444; /* Etwas heller */
+        }
+        .lv-date { width: 60px; font-size: 12px; color: #aaa; font-weight: 500;}
+        .lv-info { flex: 1; }
+        .lv-title { font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+        .lv-meta { font-size: 11px; color: #888; }
+        .lv-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; box-shadow: 0 0 3px black; }
 
         /* SETTINGS TABLE */
         .settings-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
@@ -383,7 +385,7 @@
                 <div class="cal-filter-btn" onclick="setCalFilter('dienst', this)">Dienst</div>
             </div>
 
-            <div id="calendar-list-container"></div>
+            <button class="btn-list-view" onclick="openListModal()">📋 Liste öffnen (für Auswahl)</button>
 
             <div class="calendar-grid" id="calendar-root"></div>
             
@@ -408,6 +410,17 @@
             </div>
         </div>
     </main>
+
+    <div id="list-view-modal" class="modal-overlay" onclick="closeListView(event)">
+        <div class="modal-content" style="max-height:90vh;">
+            <div class="modal-header">
+                <div class="modal-title" id="list-modal-title">Liste</div>
+                <button class="close-btn" onclick="document.getElementById('list-view-modal').classList.remove('open')">×</button>
+            </div>
+            <div id="list-view-body" style="padding-bottom:20px;">
+                </div>
+        </div>
+    </div>
 
     <div id="day-modal" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content">
@@ -838,7 +851,6 @@
             });
         }
 
-        // V21: Interaktive Liste
         function renderStats() {
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
@@ -869,7 +881,6 @@
                     else if(u.cat === 'Urlaub') col = 'var(--c-urlaub)';
                     else if(u.cat === 'Stunden') col = 'var(--c-stunden)';
                     
-                    // ONCLICK EVENT HIER:
                     listHtml += `
                         <li class="upcoming-item" onclick="jumpToDate('${u.isoStart}')">
                             <span class="u-date">${formatDateDE(u.isoStart).slice(0,6)}</span>
@@ -990,39 +1001,43 @@
             });
         }
 
-        // V23: RENDER LIST ABOVE CALENDAR
-        function renderCalendarList() {
-            const container = document.getElementById('calendar-list-container');
+        // V24 NEW: MODAL LIST
+        function openListModal() {
+            const container = document.getElementById('list-view-body');
             container.innerHTML = '';
             
-            // Titel je nach Filter
+            // Titel Setzen
             let title = "Alle Einträge";
             if(calendarFilter === 'taken') title = "Genommen (Urlaub/Frei)";
             else if(calendarFilter === 'earned') title = "Erhalten (Stunden)";
             else if(calendarFilter === 'termin') title = "Termine";
             else if(calendarFilter === 'dienst') title = "Dienste";
-            
-            container.innerHTML = `<div class="cal-list-header">${title} ${currentCalYear}</div>`;
-            
-            // Filtern für das ganze Jahr
+            document.getElementById('list-modal-title').innerText = title;
+
+            // Filtern
             const yearEntries = entries.filter(e => {
                 ensureIsoDates(e);
                 if(!e.isoStart) return false;
-                if(!e.isoStart.startsWith(currentCalYear.toString())) return false; // Nur aktuelles Jahr
                 
-                // Gleiche Filterlogik wie oben
+                // Filtere nach aktuellem Jahr? User wollte "Vergangenheit/Zukunft"
+                // Nehmen wir ALLE oder nur Jahr? Besser: ALLE, aber sortiert
+                // Damit man auch alte sieht
+                
                 if(calendarFilter === 'all') return true;
                 if(calendarFilter === 'taken') return e.mode === 'taken';
                 if(calendarFilter === 'earned') return e.mode === 'earned';
                 if(calendarFilter === 'termin') return e.cat === 'Termin';
                 if(calendarFilter === 'dienst') return e.cat === 'Dienst';
                 return false;
-            }).sort((a,b) => a.isoStart.localeCompare(b.isoStart)); // Sortiert
+            }).sort((a,b) => a.isoStart.localeCompare(b.isoStart)); 
 
             if(yearEntries.length === 0) {
-                container.innerHTML += '<div style="font-size:12px; color:#666; padding:10px; text-align:center;">Keine Einträge für diesen Filter.</div>';
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Keine Einträge gefunden.</div>';
+                document.getElementById('list-view-modal').classList.add('open');
                 return;
             }
+
+            const todayIso = new Date().toISOString().slice(0,10);
 
             yearEntries.forEach(e => {
                 let color = '#555';
@@ -1038,17 +1053,31 @@
                 if((e.cat === 'Termin' || e.cat === 'Dienst') && e.note) displayTitle = e.note;
                 else if(e.cat === 'Urlaub' || e.cat === 'Stunden') displayTitle = e.cat + " ("+e.timeDesc+")";
 
-                let html = `
-                    <div class="cal-list-item" onclick="jumpToDate('${e.isoStart}')">
-                        <div class="cal-list-date">${formatDateDE(e.isoStart).slice(0,6)}</div>
-                        <div class="cal-list-info">
-                            <div class="cal-list-dot" style="background:${color}"></div>
-                            <div class="cal-list-name">${displayTitle}</div>
+                // V24 RED/GREEN Logic
+                let timeClass = (e.isoStart < todayIso) ? 'past' : 'future';
+
+                let item = `
+                    <div class="list-view-item ${timeClass}" onclick="jumpToDateFromList('${e.isoStart}')">
+                        <div class="lv-dot" style="background:${color}"></div>
+                        <div class="lv-info">
+                            <div class="lv-title">${displayTitle}</div>
+                            <div class="lv-meta">${formatDateDE(e.isoStart)} | ${e.timeDesc}</div>
                         </div>
                     </div>
                 `;
-                container.innerHTML += html;
+                container.innerHTML += item;
             });
+            
+            document.getElementById('list-view-modal').classList.add('open');
+        }
+
+        function closeListView(e) {
+            if(e.target.id === 'list-view-modal') document.getElementById('list-view-modal').classList.remove('open');
+        }
+
+        function jumpToDateFromList(isoDate) {
+            document.getElementById('list-view-modal').classList.remove('open');
+            jumpToDate(isoDate);
         }
 
         function renderCalendar() {
@@ -1138,9 +1167,6 @@
                 monthDiv.appendChild(daysGrid);
                 root.appendChild(monthDiv);
             }
-
-            // V23: LISTE RENDERN
-            renderCalendarList();
         }
 
         // --- POPUP LOGIC ---
@@ -1272,7 +1298,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v23_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v24_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
