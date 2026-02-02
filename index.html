@@ -5,417 +5,469 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ZeitPlan">
-    <title>Zeit & Urlaub Tracker</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit">
+    <title>Arbeitszeit Tracker V4</title>
 
     <style>
         :root {
-            --bg-color: #000000;
-            --card-bg: #1c1c1e;
-            --input-bg: #2c2c2e;
-            --text-main: #ffffff;
-            --text-secondary: #8e8e93;
-            --accent: #0A84FF; /* iOS Blau */
-            --danger: #FF453A; /* Rot für Abgang */
-            --success: #30D158; /* Grün für Zugang */
-            --border: #38383a;
+            --bg: #000000;
+            --card: #1c1c1e;
+            --card-border: #2c2c2e;
+            --text: #ffffff;
+            --text-sub: #8e8e93;
+            --input: #1c1c1e;
+            --accent: #0A84FF;
+            
+            /* Kategorie Farben */
+            --c-urlaub: #FF9F0A; 
+            --c-stunden: #0A84FF;
+            --c-krank: #FF453A;
+            --c-da: #BF5AF2;
+            --c-lzk: #30D158;
+            --c-sonder: #64D2FF;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
             padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
+            font-size: 14px;
         }
 
-        /* --- Header --- */
+        /* Top Bar */
         header {
-            padding-top: max(20px, env(safe-area-inset-top));
+            padding-top: max(10px, env(safe-area-inset-top));
             padding-bottom: 10px;
-            background-color: var(--bg-color);
+            background-color: var(--bg);
             text-align: center;
-            border-bottom: 1px solid var(--border);
-            z-index: 10;
+            border-bottom: 1px solid var(--card-border);
         }
-        header h1 { margin: 10px 0 5px; font-size: 20px; font-weight: 600; }
+        header h1 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- Main Content --- */
+        /* Main Area */
         main {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
-            padding-bottom: 100px; /* Platz für Tab Bar */
+            padding: 15px;
+            padding-bottom: 80px;
         }
 
-        /* --- Views (Tabs) --- */
-        .view { display: none; }
-        .view.active { display: block; }
-
-        /* --- Form Elements --- */
-        .form-group { margin-bottom: 20px; }
-        label { display: block; color: var(--text-secondary); font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Eingabe Form */
+        .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .input-col { flex: 1; }
         
-        input, select {
+        label { display: block; color: var(--text-sub); font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
+        
+        input, select, textarea {
             width: 100%;
-            background-color: var(--input-bg);
-            border: none;
+            background-color: var(--input);
+            border: 1px solid var(--card-border);
             color: white;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 17px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
             box-sizing: border-box;
-            -webkit-appearance: none; /* iOS Reset */
+            -webkit-appearance: none;
+            font-family: inherit;
         }
 
-        /* Segmented Control (Switch) */
-        .segmented-control {
-            display: flex;
-            background-color: var(--input-bg);
-            border-radius: 9px;
-            padding: 2px;
-            margin-bottom: 25px;
+        textarea {
+            resize: none;
+            height: 60px;
         }
-        .segment-btn {
-            flex: 1;
-            padding: 10px;
-            text-align: center;
-            border-radius: 7px;
-            font-size: 14px;
+        
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            margin-top: 5px;
         }
-        .segment-btn.active {
-            background-color: #636366;
-            color: white;
-        }
-        /* Farben für den Switch */
-        .segment-btn[data-value="taken"].active { background-color: var(--danger); }
-        .segment-btn[data-value="earned"].active { background-color: var(--success); }
+        .btn-primary { background-color: var(--card-border); color: var(--accent); }
+        .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
 
-        .row { display: flex; gap: 15px; }
-        .col { flex: 1; }
-
-        button.save-btn {
-            background-color: var(--accent);
-            color: white;
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 14px;
-            font-size: 17px;
-            font-weight: 600;
-            margin-top: 10px;
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex; background: var(--card); border-radius: 8px; padding: 2px; margin-bottom: 15px; border: 1px solid var(--card-border);
         }
-
-        /* --- History List --- */
-        .entry-card {
-            background-color: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .toggle-btn {
+            flex: 1; padding: 8px; text-align: center; font-weight: 500; font-size: 13px; border-radius: 6px; transition: 0.2s;
         }
-        .entry-info h3 { margin: 0 0 5px; font-size: 16px; }
-        .entry-info p { margin: 0; color: var(--text-secondary); font-size: 13px; }
-        .entry-value { font-weight: 700; font-size: 16px; }
-        .entry-value.taken { color: var(--danger); }
-        .entry-value.earned { color: var(--success); }
+        .toggle-btn.active { background: #3a3a3c; color: #fff; }
+
+        /* VERLAUF LISTE */
+        .history-item {
+            background-color: var(--card);
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #555;
+            position: relative;
+        }
+        .cat-urlaub { border-left-color: var(--c-urlaub); }
+        .cat-stunden { border-left-color: var(--c-stunden); }
+        .cat-kindkrank { border-left-color: var(--c-krank); }
+        .cat-da { border-left-color: var(--c-da); }
+        .cat-lzk { border-left-color: var(--c-lzk); }
+        .cat-sonder { border-left-color: var(--c-sonder); }
+
+        .h-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .h-title { font-size: 15px; font-weight: 600; }
+        .h-meta { font-size: 12px; color: var(--text-sub); margin-top: 2px;}
+        .h-val { font-size: 15px; font-weight: 700; text-align: right; }
+        .h-val.neg { color: #ff453a; }
+        .h-val.pos { color: #30d158; }
         
-        .delete-btn {
-            background: none; border: none; color: var(--text-secondary); font-size: 12px; margin-top: 5px;
+        .h-note {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+            color: #ddd;
+            font-style: italic;
         }
 
-        /* --- Dashboard Stats --- */
-        .stat-card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .stat-label { font-size: 15px; font-weight: 500; }
-        .stat-number { font-size: 20px; font-weight: 700; color: var(--accent); }
+        /* STATISTIK GRID */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { background-color: var(--card); padding: 12px; border-radius: 8px; border: 1px solid var(--card-border); }
+        .stat-box h4 { margin: 0 0 5px; font-size: 11px; color: var(--text-sub); text-transform: uppercase; }
+        .stat-box span { font-size: 18px; font-weight: 700; color: var(--text); }
+        .unit { font-size: 12px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
 
-        /* --- Tab Bar --- */
-        nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background-color: rgba(28, 28, 30, 0.95);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-around;
-            padding-bottom: env(safe-area-inset-bottom);
-            padding-top: 10px;
-            height: 55px;
-        }
-        .nav-item {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 10px;
-            width: 60px;
-        }
-        .nav-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+        /* Tools */
+        .data-tools { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border); display: flex; gap: 10px; }
+        .btn-small { flex: 1; padding: 10px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 6px; font-size: 12px; }
+
+        /* Navigation */
+        nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); border-top: 1px solid var(--card-border); display: flex; height: 50px; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { flex: 1; display: flex; justify-content: center; align-items: center; color: #555; font-size: 20px; }
         .nav-item.active { color: var(--accent); }
-
+        
+        .view { display: none; }
+        .view.active { display: block; }
     </style>
 </head>
 <body>
 
     <header>
-        <h1 id="page-title">Neuer Eintrag</h1>
+        <h1 id="header-title">Eingabe</h1>
     </header>
 
     <main>
-        <div id="view-add" class="view active">
+        <div id="view-input" class="view active">
             
-            <div class="segmented-control">
-                <div class="segment-btn active" data-value="taken" onclick="setType('taken')">Genommen (-)</div>
-                <div class="segment-btn" data-value="earned" onclick="setType('earned')">Erhalten (+)</div>
+            <div class="toggle-container">
+                <div class="toggle-btn active" id="btn-taken" onclick="setMode('taken')">Genommen (-)</div>
+                <div class="toggle-btn" id="btn-earned" onclick="setMode('earned')">Erhalten (+)</div>
             </div>
 
-            <div class="form-group">
-                <label>Kategorie</label>
-                <select id="category">
-                    <option value="Urlaub">Urlaub</option>
-                    <option value="Stunden">Stunden / Überstunden</option>
-                    <option value="Kindkrank">Kindkrank</option>
-                    <option value="DA">DA (Dienstausgleich)</option>
-                    <option value="Langzeitkonto">Langzeitkonto</option>
-                    <option value="Sonderurlaub">Sonderurlaub</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Datum</label>
-                <input type="date" id="date">
-            </div>
-
-            <div class="row">
-                <div class="col">
-                    <div class="form-group">
-                        <label>Von</label>
-                        <input type="time" id="time-start" value="08:00">
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="form-group">
-                        <label>Bis</label>
-                        <input type="time" id="time-end" value="16:30">
-                    </div>
+            <div class="input-row">
+                <div class="input-col">
+                    <label>Kategorie</label>
+                    <select id="inp-cat">
+                        <option value="Urlaub">Urlaub</option>
+                        <option value="Stunden">Stunden</option>
+                        <option value="Kindkrank">Kindkrank</option>
+                        <option value="DA">DA Dienstausgleich</option>
+                        <option value="Langzeitkonto">Langzeitkonto</option>
+                        <option value="Sonderurlaub">Sonderurlaub</option>
+                    </select>
                 </div>
             </div>
 
-            <button class="save-btn" onclick="addEntry()">Speichern</button>
+            <div class="input-row">
+                <div class="input-col">
+                    <label>Datum (Auto-Zeit)</label>
+                    <input type="date" id="inp-date" onchange="autoFillTimes()">
+                </div>
+            </div>
+
+            <div id="time-container" class="input-row">
+                <div class="input-col">
+                    <label>Von</label>
+                    <input type="time" id="inp-start" value="07:00">
+                </div>
+                <div class="input-col">
+                    <label>Bis</label>
+                    <input type="time" id="inp-end" value="16:30">
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-col">
+                    <label>Begründung / Notiz</label>
+                    <textarea id="inp-note" placeholder="z.B. Arzttermin, 24h Dienst..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveEntry()">Eintrag Speichern</button>
         </div>
 
-        <div id="view-list" class="view">
-            <div id="entries-container">
-                <p style="text-align:center; color: #555; margin-top: 50px;">Noch keine Einträge.</p>
-            </div>
-            <button onclick="clearAllData()" style="margin-top:30px; width:100%; background:none; border:1px solid #333; color:#555; padding:10px; border-radius:10px;">Alles löschen (Reset)</button>
+        <div id="view-history" class="view">
+            <div id="history-list"></div>
+            <p id="no-data-msg" style="text-align:center; color:#333; margin-top:30px; display:none;">Keine Einträge.</p>
         </div>
 
         <div id="view-stats" class="view">
-            <h2 style="font-size:14px; color:#666; text-transform:uppercase; margin-bottom:15px;">Summen (Stunden)</h2>
-            <div id="stats-container">
-                </div>
+            <div class="stats-grid" id="stats-grid"></div>
+            <div class="data-tools">
+                <button class="btn-small" onclick="exportData()">💾 Backup speichern</button>
+                <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Backup laden</button>
+                <input type="file" id="file-upload" style="display:none" onchange="importData(this)">
+            </div>
+            <div style="margin-top:20px;">
+                 <button class="btn-danger" onclick="resetAll()">Alle Daten löschen</button>
+            </div>
         </div>
     </main>
 
     <nav>
-        <div class="nav-item active" onclick="switchView('view-add', this, 'Neuer Eintrag')">
-            <span class="nav-icon">➕</span>
-            Eingabe
-        </div>
-        <div class="nav-item" onclick="switchView('view-list', this, 'Verlauf')">
-            <span class="nav-icon">📅</span>
-            Verlauf
-        </div>
-        <div class="nav-item" onclick="switchView('view-stats', this, 'Statistik')">
-            <span class="nav-icon">📊</span>
-            Statistik
-        </div>
+        <div class="nav-item active" onclick="showView('view-input', this, 'Eingabe')">⌨️</div>
+        <div class="nav-item" onclick="showView('view-history', this, 'Verlauf')">≡</div>
+        <div class="nav-item" onclick="showView('view-stats', this, 'Statistik')">📊</div>
     </nav>
 
     <script>
-        // --- LOGIK ---
+        // DATENSPEICHER (Nutz v3 Speicher weiter, da Struktur gleich)
+        let entries = JSON.parse(localStorage.getItem('trackData_v3')) || [];
+        let mode = 'taken'; // 'taken' or 'earned'
+        const HOURS_PER_DAY = 8; 
 
-        let entries = JSON.parse(localStorage.getItem('myWorkData')) || [];
-        let currentType = 'taken'; // 'taken' (genommen) or 'earned' (erhalten)
+        // DEIN SCHICHTPLAN (Mo-Fr)
+        const SCHEDULE = {
+            1: { s: "07:00", e: "17:30" }, // Montag
+            2: { s: "07:00", e: "16:30" }, // Dienstag
+            3: { s: "07:00", e: "15:30" }, // Mittwoch
+            4: { s: "07:00", e: "16:30" }, // Donnerstag
+            5: { s: "07:00", e: "11:00" }  // Freitag
+        };
 
-        // Init beim Laden
-        window.addEventListener('load', () => {
-            document.getElementById('date').valueAsDate = new Date();
-            renderList();
-            renderStats();
-        });
+        window.onload = function() {
+            document.getElementById('inp-date').valueAsDate = new Date();
+            autoFillTimes();
+            updateUI();
+        };
 
-        // Typ umschalten
-        function setType(type) {
-            currentType = type;
-            document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.segment-btn[data-value="${type}"]`).classList.add('active');
+        function setMode(m) {
+            mode = m;
+            document.getElementById('btn-taken').classList.toggle('active', m === 'taken');
+            document.getElementById('btn-earned').classList.toggle('active', m === 'earned');
         }
 
-        // Eintrag speichern
-        function addEntry() {
-            const category = document.getElementById('category').value;
-            const date = document.getElementById('date').value;
-            const start = document.getElementById('time-start').value;
-            const end = document.getElementById('time-end').value;
+        // Automatisch Zeiten setzen
+        function autoFillTimes() {
+            const dateInput = document.getElementById('inp-date');
+            if(!dateInput.value) return;
 
-            if(!date || !start || !end) {
-                alert("Bitte Datum und Zeiten ausfüllen.");
-                return;
+            const date = new Date(dateInput.value);
+            const dayOfWeek = date.getDay(); 
+            
+            const plan = SCHEDULE[dayOfWeek];
+            if(plan) {
+                document.getElementById('inp-start').value = plan.s;
+                document.getElementById('inp-end').value = plan.e;
             }
+        }
+
+        function saveEntry() {
+            const cat = document.getElementById('inp-cat').value;
+            const date = document.getElementById('inp-date').value;
+            const start = document.getElementById('inp-start').value;
+            const end = document.getElementById('inp-end').value;
+            const note = document.getElementById('inp-note').value;
+
+            if(!date || !start || !end) { alert("Bitte Datum und Zeit prüfen."); return; }
 
             // Dauer berechnen
-            const duration = calculateDuration(start, end);
+            let dur = calcDuration(start, end);
             
-            const entry = {
+            const newEntry = {
                 id: Date.now(),
-                type: currentType,
-                category,
-                date,
-                start,
-                end,
-                duration
+                cat: cat,
+                date: date,
+                start: start,
+                end: end,
+                hours: dur,
+                mode: mode,
+                note: note
             };
 
-            entries.unshift(entry); // Neuen Eintrag an den Anfang
-            localStorage.setItem('myWorkData', JSON.stringify(entries));
+            entries.unshift(newEntry);
+            localStorage.setItem('trackData_v3', JSON.stringify(entries));
+            
+            alert('Gespeichert');
+            document.getElementById('inp-note').value = "";
+            updateUI();
+        }
 
-            alert('Gespeichert!');
-            renderList();
+        function calcDuration(start, end) {
+            let s = start.split(':').map(Number);
+            let e = end.split(':').map(Number);
+            let minS = s[0]*60 + s[1];
+            let minE = e[0]*60 + e[1];
+            let diff = minE - minS;
+
+            // Logik für 24h und Übernacht
+            if (diff === 0) {
+                // Wenn Start == Ende (z.B. 07:00 bis 07:00), gehen wir von 24h aus
+                return 24.0;
+            } else if (diff < 0) {
+                // Wenn Ende vor Start liegt (z.B. 20:00 bis 06:00), ist es über Nacht
+                diff += 1440; 
+            }
+            
+            return diff / 60;
+        }
+
+        function deleteEntry(id) {
+            if(confirm("Löschen?")) {
+                entries = entries.filter(e => e.id !== id);
+                localStorage.setItem('trackData_v3', JSON.stringify(entries));
+                updateUI();
+            }
+        }
+
+        function updateUI() {
+            renderHistory();
             renderStats();
         }
 
-        // Zeitdifferenz berechnen in Stunden (Dezimal)
-        function calculateDuration(start, end) {
-            const s = start.split(':');
-            const e = end.split(':');
-            const startMin = parseInt(s[0]) * 60 + parseInt(s[1]);
-            const endMin = parseInt(e[0]) * 60 + parseInt(e[1]);
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
             
-            let diff = endMin - startMin;
-            if (diff < 0) diff += 24 * 60; // Falls über Mitternacht (simpel)
-            
-            return (diff / 60).toFixed(2); // z.B. 4.50 Stunden
-        }
+            if(entries.length === 0) document.getElementById('no-data-msg').style.display = 'block';
+            else document.getElementById('no-data-msg').style.display = 'none';
 
-        // Liste anzeigen
-        function renderList() {
-            const container = document.getElementById('entries-container');
-            container.innerHTML = '';
+            entries.forEach(e => {
+                let colorClass = '';
+                if(e.cat === 'Urlaub') colorClass = 'cat-urlaub';
+                else if(e.cat === 'Stunden') colorClass = 'cat-stunden';
+                else if(e.cat === 'Kindkrank') colorClass = 'cat-kindkrank';
+                else if(e.cat === 'DA') colorClass = 'cat-da';
+                else if(e.cat === 'Langzeitkonto') colorClass = 'cat-lzk';
+                else colorClass = 'cat-sonder';
 
-            if (entries.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color: #555; margin-top: 50px;">Keine Einträge vorhanden.</p>';
-                return;
-            }
-
-            entries.forEach(entry => {
-                const isTaken = entry.type === 'taken';
-                const sign = isTaken ? '-' : '+';
-                const colorClass = isTaken ? 'taken' : 'earned';
+                let valClass = e.mode === 'taken' ? 'neg' : 'pos';
+                let sign = e.mode === 'taken' ? '-' : '+';
                 
-                // Datum schön formatieren
-                const dateObj = new Date(entry.date);
-                const dateStr = dateObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit'});
+                let d = new Date(e.date);
+                let dateStr = d.toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', year:'2-digit'});
+                
+                let noteHtml = e.note ? `<div class="h-note">${e.note}</div>` : '';
 
-                const html = `
-                <div class="entry-card">
-                    <div class="entry-info">
-                        <h3>${entry.category}</h3>
-                        <p>${dateStr} | ${entry.start} - ${entry.end} Uhr</p>
-                        <button class="delete-btn" onclick="deleteEntry(${entry.id})">Löschen</button>
+                let item = `
+                    <div class="history-item ${colorClass}" onclick="deleteEntry(${e.id})">
+                        <div class="h-top">
+                            <div>
+                                <div class="h-title">${e.cat}</div>
+                                <div class="h-meta">${dateStr} | ${e.start} - ${e.end}</div>
+                            </div>
+                            <div class="h-val ${valClass}">${sign} ${e.hours.toFixed(2)} h</div>
+                        </div>
+                        ${noteHtml}
                     </div>
-                    <div class="entry-value ${colorClass}">
-                        ${sign} ${entry.duration} h
-                    </div>
-                </div>
                 `;
-                container.insertAdjacentHTML('beforeend', html);
+                list.innerHTML += item;
             });
         }
 
-        // Statistik anzeigen
         function renderStats() {
-            const container = document.getElementById('stats-container');
-            const categories = ["Urlaub", "Stunden", "Kindkrank", "DA", "Langzeitkonto", "Sonderurlaub"];
-            
-            let html = '';
+            const grid = document.getElementById('stats-grid');
+            grid.innerHTML = '';
 
-            categories.forEach(cat => {
-                // Filter für die Kategorie
-                const catEntries = entries.filter(e => e.category === cat);
-                
-                let total = 0;
-                catEntries.forEach(e => {
-                    const val = parseFloat(e.duration);
-                    if (e.type === 'earned') total += val;
-                    else total -= val;
+            const categories = [
+                { name: 'Urlaub', unit: 'Tage' },
+                { name: 'Stunden', unit: 'Std' },
+                { name: 'Kindkrank', unit: 'Tage' },
+                { name: 'DA', unit: 'Tage' },
+                { name: 'Langzeitkonto', unit: 'Std' },
+                { name: 'Sonderurlaub', unit: 'Tage' }
+            ];
+
+            categories.forEach(c => {
+                let sumHours = 0;
+                entries.filter(e => e.cat.startsWith(c.name) || (c.name === 'DA' && e.cat === 'DA Dienstausgleich')).forEach(e => {
+                    if(e.mode === 'earned') sumHours += e.hours;
+                    else sumHours -= e.hours;
                 });
 
-                // Farbe basierend auf Positiv/Negativ
-                const color = total >= 0 ? 'var(--success)' : 'var(--danger)';
-                const displayTotal = total.toFixed(2);
+                let displayVal = 0;
+                if(c.unit === 'Tage') {
+                    displayVal = (sumHours / HOURS_PER_DAY).toFixed(2);
+                } else {
+                    displayVal = sumHours.toFixed(2);
+                }
 
-                html += `
-                <div class="stat-card">
-                    <span class="stat-label">${cat}</span>
-                    <span class="stat-number" style="color: ${color}">${displayTotal} h</span>
-                </div>
+                let color = displayVal >= 0 ? '#fff' : '#ff453a';
+
+                let box = `
+                    <div class="stat-box">
+                        <h4>${c.name}</h4>
+                        <span style="color:${color}">${displayVal}<span class="unit">${c.unit}</span></span>
+                    </div>
                 `;
+                grid.innerHTML += box;
             });
-
-            container.innerHTML = html;
         }
 
-        // Eintrag löschen
-        function deleteEntry(id) {
-            if(confirm('Eintrag wirklich löschen?')) {
-                entries = entries.filter(e => e.id !== id);
-                localStorage.setItem('myWorkData', JSON.stringify(entries));
-                renderList();
-                renderStats();
-            }
+        function exportData() {
+            const dataStr = JSON.stringify(entries);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "backup_zeit_" + new Date().toISOString().slice(0,10) + ".json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
-        // Alles löschen
-        function clearAllData() {
-            if(confirm('ALLES löschen? Das kann nicht rückgängig gemacht werden.')) {
-                localStorage.removeItem('myWorkData');
+        function importData(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if(Array.isArray(json)) {
+                        if(confirm("Daten überschreiben?")) {
+                            entries = json;
+                            localStorage.setItem('trackData_v3', JSON.stringify(entries));
+                            updateUI();
+                            alert("Geladen.");
+                        }
+                    }
+                } catch(err) { alert("Fehler"); }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        function resetAll() {
+            if(confirm("ALLES löschen?")) {
+                localStorage.removeItem('trackData_v3');
                 entries = [];
-                renderList();
-                renderStats();
+                updateUI();
             }
         }
 
-        // Tabs umschalten
-        function switchView(viewId, navItem, title) {
-            // Hide all views
-            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-            // Show selected view
-            document.getElementById(viewId).classList.add('active');
-            
-            // Update Title
-            document.getElementById('page-title').innerText = title;
-
-            // Update Nav
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            navItem.classList.add('active');
+        function showView(id, el, title) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('header-title').innerText = title;
         }
     </script>
 </body>
