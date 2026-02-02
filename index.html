@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V19">
-    <title>Arbeitszeit Tracker V19</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V20">
+    <title>Arbeitszeit Tracker V20</title>
 
     <style>
         :root {
@@ -93,6 +93,7 @@
         }
         .btn-primary { background-color: var(--card-border); color: var(--accent); }
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); margin-top: 10px; }
 
         /* Toggle Switch */
         .toggle-container {
@@ -132,7 +133,7 @@
             background: none; border: none; font-size: 18px; cursor: pointer; padding: 10px; opacity: 0.6;
         }
 
-        /* STATISTIK GRID KOMPAKT */
+        /* STATISTIK GRID */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .stat-box { 
             background-color: var(--card); 
@@ -162,25 +163,50 @@
         /* KALENDER */
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
-        .cal-filter-container { display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; }
-        .cal-filter-btn { padding: 6px 12px; background-color: var(--card); border: 1px solid var(--card-border); border-radius: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer; }
+        
+        /* Filter Container Scrollable for small screens */
+        .cal-filter-container { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
+        .cal-filter-btn { padding: 6px 12px; background-color: var(--card); border: 1px solid var(--card-border); border-radius: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
         .cal-filter-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
+        
         .calendar-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (orientation: landscape) { .calendar-grid { grid-template-columns: 1fr 1fr 1fr; } }
         .month-card { background-color: var(--card); padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); }
         .month-name { text-align: center; font-weight: 600; margin-bottom: 10px; color: var(--text-sub); text-transform: uppercase; font-size: 12px; }
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .day-label { font-size: 9px; color: #555; padding-bottom: 5px; }
-        .day-cell { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 12px; border-radius: 4px; position: relative; cursor: pointer; }
+        
+        .day-cell { 
+            aspect-ratio: 1; 
+            display: flex; 
+            flex-direction: column; /* Wichtig für Dots unten */
+            justify-content: flex-start; 
+            align-items: center; 
+            font-size: 12px; 
+            border-radius: 4px; 
+            position: relative; 
+            cursor: pointer;
+            padding-top: 4px;
+        }
         .day-cell.empty { background: none; pointer-events: none; }
         
-        .has-event { background-color: #333; color: white; font-weight: bold; }
-        .mark-urlaub { background-color: var(--c-urlaub); color: black; }
-        .mark-stunden { background-color: var(--c-stunden); color: white; }
-        .mark-krank { background-color: var(--c-krank); color: white; }
-        .mark-da { background-color: var(--c-da); color: white; }
-        .mark-lzk { background-color: var(--c-lzk); color: black; }
-        .mark-sonder { background-color: var(--c-sonder); color: black; }
+        /* Multi-Color Dots Container */
+        .event-dots {
+            display: flex;
+            gap: 2px;
+            margin-top: auto;
+            margin-bottom: 4px;
+            justify-content: center;
+            width: 100%;
+            flex-wrap: wrap;
+            padding: 0 2px;
+        }
+        .event-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: #555;
+        }
         
         /* POPUP MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
@@ -192,6 +218,12 @@
         
         .modal-add-area { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
         .modal-add-title { font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
+        
+        /* Modal Type Selector */
+        .modal-type-selector { display: flex; gap: 5px; margin-bottom: 10px; }
+        .modal-type-btn { flex: 1; padding: 8px; background: var(--input); border: 1px solid var(--card-border); color: #888; border-radius: 6px; font-size: 12px; cursor: pointer; text-align: center; }
+        .modal-type-btn.active { background: var(--card-border); color: white; border-color: #555; font-weight: bold; }
+
         .modal-color-row { display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; }
         .modal-color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
         .modal-color-btn.selected { border-color: white; transform: scale(1.1); }
@@ -298,6 +330,7 @@
                 <div class="cal-filter-btn active" onclick="setCalFilter('all', this)">Alle</div>
                 <div class="cal-filter-btn" onclick="setCalFilter('taken', this)">Genommen (-)</div>
                 <div class="cal-filter-btn" onclick="setCalFilter('earned', this)">Erhalten (+)</div>
+                <div class="cal-filter-btn" onclick="setCalFilter('appointments', this)">Nur Termine/Dienste</div>
             </div>
 
             <div class="calendar-grid" id="calendar-root"></div>
@@ -332,8 +365,15 @@
             <div id="modal-body"></div>
             
             <div class="modal-add-area">
-                <div class="modal-add-title">Termin / Dienst eintragen</div>
-                <input type="text" id="modal-note-input" placeholder="Name (z.B. Spätschicht)" style="margin-bottom:10px; font-size:14px;">
+                <div class="modal-add-title">Neuer Eintrag</div>
+                
+                <div class="modal-type-selector">
+                    <div class="modal-type-btn active" id="type-termin" onclick="setModalType('Termin')">Termin</div>
+                    <div class="modal-type-btn" id="type-dienst" onclick="setModalType('Dienst')">Dienst</div>
+                </div>
+
+                <input type="text" id="modal-note-input" placeholder="Beschreibung (z.B. Zahnarzt)" style="margin-bottom:10px; font-size:14px;">
+                
                 <div class="modal-color-row">
                     <div class="modal-color-btn selected" style="background-color: var(--note-pink)" onclick="selectModalColor(this, 'pink')"></div>
                     <div class="modal-color-btn" style="background-color: var(--note-teal)" onclick="selectModalColor(this, 'teal')"></div>
@@ -341,7 +381,10 @@
                     <div class="modal-color-btn" style="background-color: var(--note-purple)" onclick="selectModalColor(this, 'purple')"></div>
                     <div class="modal-color-btn" style="background-color: var(--note-white)" onclick="selectModalColor(this, 'white')"></div>
                 </div>
+                
                 <button class="btn btn-primary" onclick="saveModalNote()" style="padding:10px; font-size:14px;">Speichern</button>
+                
+                <button class="btn btn-outline" onclick="goToFullBooking()" style="width:100%; font-size:12px; padding:10px;">📝 Urlaub / Stunden buchen</button>
             </div>
         </div>
     </div>
@@ -353,11 +396,6 @@
                 <button class="close-btn" onclick="document.getElementById('settings-modal').classList.remove('open')">×</button>
             </div>
             
-            <div style="margin-bottom: 20px;">
-                <label>Standard Stunden pro Tag (für Urlaub):</label>
-                <input type="number" id="set-std-hours" step="0.1" value="8">
-            </div>
-
             <table class="settings-table">
                 <thead><tr><th>Tag</th><th>Von</th><th>Bis</th></tr></thead>
                 <tbody id="settings-tbody">
@@ -377,9 +415,8 @@
 
     <script>
         let entries = JSON.parse(localStorage.getItem('trackData_v5')) || [];
-        // Settings laden oder Default
         let settings = JSON.parse(localStorage.getItem('trackSettings_v17')) || {
-            stdHours: 8,
+            // V20: stdHours entfernt aus UI, default ist 8 falls nötig
             schedule: [
                 {s: "00:00", e: "00:00"}, // 0 So
                 {s: "07:00", e: "16:00"}, // 1 Mo
@@ -396,6 +433,7 @@
         let calendarFilter = 'all';
         let modalCurrentIsoDate = null; 
         let modalSelectedColor = 'pink'; 
+        let modalSelectedType = 'Termin';
 
         const COLOR_MAP = {
             'pink': '#FF2D55',
@@ -419,7 +457,6 @@
 
         // --- SETTINGS LOGIC ---
         function openSettings() {
-            document.getElementById('set-std-hours').value = settings.stdHours;
             const tbody = document.getElementById('settings-tbody');
             tbody.innerHTML = '';
             
@@ -439,8 +476,6 @@
         }
 
         function saveSettings() {
-            settings.stdHours = parseFloat(document.getElementById('set-std-hours').value) || 8;
-            
             for(let i=0; i<7; i++) {
                 const sInput = document.getElementById(`set-s-${i}`);
                 const eInput = document.getElementById(`set-e-${i}`);
@@ -533,7 +568,6 @@
             if(diff === 0) diff = 24 * 60; 
             if(diff < 0) diff += 1440; 
             
-            // Fülle das neue Feld
             document.getElementById('time-duration-override').value = formatNumber(diff/60);
         }
 
@@ -562,8 +596,8 @@
             let isoStart = "";
             let isoEnd = ""; 
 
-            // Benutze konfigurierte Std
-            const hoursPerDay = settings.stdHours;
+            // Standard 8 falls nicht konfiguriert
+            const hoursPerDay = 8;
 
             if (!document.getElementById('section-manual').classList.contains('hidden')) {
                 const val = parseFloat(document.getElementById('inp-amount').value);
@@ -578,10 +612,8 @@
                 const t1 = document.getElementById('time-start').value;
                 const t2 = document.getElementById('time-end').value;
                 
-                // Hole den Wert aus dem NEUEN Feld
                 let manualOverride = parseFloat(document.getElementById('time-duration-override').value);
                 if(isNaN(manualOverride)) {
-                     // Fallback, sollte aber eigentlich immer gefüllt sein durch calculateDuration
                     let s = t1.split(':').map(Number);
                     let e = t2.split(':').map(Number);
                     let diff = (e[0]*60 + e[1]) - (s[0]*60 + s[1]);
@@ -659,12 +691,12 @@
         }
 
         function adjustStat(catName, currentTotalHours, unit) {
-            let newValStr = prompt(`Aktuell: ${formatNumber(unit === 'Tage' ? currentTotalHours/settings.stdHours : currentTotalHours)} ${unit}.\n\nNeuer Stand:`);
+            let newValStr = prompt(`Aktuell: ${formatNumber(unit === 'Tage' ? currentTotalHours/8 : currentTotalHours)} ${unit}.\n\nNeuer Stand:`);
             if (newValStr === null) return; 
             let newVal = parseFloat(newValStr.replace(',', '.'));
             if (isNaN(newVal)) { alert("Keine gültige Zahl"); return; }
             let targetHours = newVal;
-            if (unit === 'Tage') targetHours = newVal * settings.stdHours;
+            if (unit === 'Tage') targetHours = newVal * 8;
             let diff = targetHours - currentTotalHours;
             if (diff === 0) return; 
             let mode = diff > 0 ? 'earned' : 'taken';
@@ -702,7 +734,7 @@
                 let colorClass = '';
                 let customStyle = '';
                 
-                if(e.cat === 'Termin' && e.color) {
+                if((e.cat === 'Termin' || e.cat === 'Dienst') && e.color) {
                     customStyle = `border-left-color: ${e.color};`;
                     colorClass = 'cat-termin';
                 } else {
@@ -718,11 +750,11 @@
                 let sign = e.mode === 'taken' ? '-' : '+';
                 
                 let displayVal = "";
-                if(e.cat === 'Termin') {
+                if(e.cat === 'Termin' || e.cat === 'Dienst') {
                     displayVal = "";
                     sign = "";
                 } else if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
-                    displayVal = formatNumber(e.hours / settings.stdHours) + " d";
+                    displayVal = formatNumber(e.hours / 8) + " d";
                 } else {
                     displayVal = formatNumber(e.hours) + " h";
                 }
@@ -731,9 +763,9 @@
                 if(showDate.match(/^\d{4}-\d{2}-\d{2}$/)) showDate = formatDateDE(showDate);
                 
                 let displayTitle = e.cat;
-                if(e.cat === 'Termin' && e.note) displayTitle = e.note; 
+                if((e.cat === 'Termin' || e.cat === 'Dienst') && e.note) displayTitle = e.note + " ("+e.cat+")"; 
 
-                let noteHtml = (e.cat !== 'Termin' && e.note) ? `<div class="h-note">${e.note}</div>` : '';
+                let noteHtml = (e.cat !== 'Termin' && e.cat !== 'Dienst' && e.note) ? `<div class="h-note">${e.note}</div>` : '';
 
                 let item = `
                     <div class="history-item ${colorClass}" style="${customStyle}">
@@ -758,7 +790,6 @@
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
 
-            // V18 Fix: Upcoming erst ab MORGEN
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -778,7 +809,7 @@
             if(upcoming.length > 0) {
                 upcoming.forEach(u => {
                     let label = u.cat;
-                    if(u.cat === 'Termin' && u.note) label = u.note;
+                    if((u.cat === 'Termin' || u.cat === 'Dienst') && u.note) label = u.note;
                     
                     let col = 'white';
                     if(u.color) col = u.color;
@@ -816,7 +847,7 @@
             let boxDays = document.createElement('div');
             boxDays.className = 'stat-box summary';
             let colD = totalDays >= 0 ? '#fff' : '#ff453a';
-            boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/settings.stdHours)}<span class="unit">Ges</span></span>`;
+            boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/8)}<span class="unit">Ges</span></span>`;
             grid.appendChild(boxDays);
 
             let boxHours = document.createElement('div');
@@ -843,7 +874,7 @@
 
                 let displayVal = 0;
                 if(c.unit === 'Tage') {
-                    displayVal = formatNumber(sumHours / settings.stdHours);
+                    displayVal = formatNumber(sumHours / 8);
                 } else {
                     displayVal = formatNumber(sumHours);
                 }
@@ -884,6 +915,10 @@
                 if(calendarFilter === 'all') return matchesDate;
                 if(calendarFilter === 'taken') return matchesDate && e.mode === 'taken';
                 if(calendarFilter === 'earned') return matchesDate && e.mode === 'earned';
+                // V20: Filter für Termine/Dienste
+                if(calendarFilter === 'appointments') {
+                    return matchesDate && (e.cat === 'Termin' || e.cat === 'Dienst');
+                }
                 return false;
             });
         }
@@ -933,34 +968,41 @@
 
                     const dayEvents = getEventsForDate(isoDate);
                     
+                    // DOTS CONTAINER
+                    const dotsContainer = document.createElement('div');
+                    dotsContainer.className = 'event-dots';
+
                     if(dayEvents.length > 0) {
-                        // V18 Filter: Nur anzeigen wenn Termin ODER "taken" (frei)
-                        // "Earned" (Guthaben) wird im Kalender versteckt
+                        // Welche Events sollen angezeigt werden?
                         let visibleEvents = dayEvents.filter(e => {
-                            if(e.cat === 'Termin') return true;
+                            if(calendarFilter === 'appointments') return true; // Alles was durch Filter kam
+                            // Bei Filter "All" oder "Taken":
+                            if(e.cat === 'Termin' || e.cat === 'Dienst') return true;
                             if(e.mode === 'taken') return true;
                             return false; 
                         });
 
-                        if(visibleEvents.length > 0) {
-                            let primary = visibleEvents[0];
-                            cell.classList.add('has-event');
+                        // Für jeden sichtbaren Event einen Punkt erstellen
+                        visibleEvents.forEach(e => {
+                            let dot = document.createElement('div');
+                            dot.className = 'event-dot';
                             
-                            if(primary.color) {
-                                cell.style.backgroundColor = primary.color;
-                                cell.style.color = 'white'; 
-                                if(primary.color === '#FFD60A' || primary.color === '#EBEBF5') cell.style.color = 'black'; 
-                            } else {
-                                if(primary.cat.startsWith('Urlaub')) cell.classList.add('mark-urlaub');
-                                else if(primary.cat.startsWith('Stunden')) cell.classList.add('mark-stunden');
-                                else if(primary.cat.startsWith('Kind')) cell.classList.add('mark-krank');
-                                else if(primary.cat.startsWith('DA')) cell.classList.add('mark-da');
-                                else if(primary.cat.startsWith('Lang')) cell.classList.add('mark-lzk');
-                                else if(primary.cat.startsWith('Sonder')) cell.classList.add('mark-sonder');
-                            }
-                        }
+                            // Farbe bestimmen
+                            let bg = '#555';
+                            if(e.color) bg = e.color;
+                            else if(e.cat.startsWith('Urlaub')) bg = 'var(--c-urlaub)';
+                            else if(e.cat.startsWith('Stunden')) bg = 'var(--c-stunden)';
+                            else if(e.cat.startsWith('Kind')) bg = 'var(--c-krank)';
+                            else if(e.cat.startsWith('DA')) bg = 'var(--c-da)';
+                            else if(e.cat.startsWith('Lang')) bg = 'var(--c-lzk)';
+                            else if(e.cat.startsWith('Sonder')) bg = 'var(--c-sonder)';
+                            
+                            dot.style.backgroundColor = bg;
+                            dotsContainer.appendChild(dot);
+                        });
                     }
-
+                    
+                    cell.appendChild(dotsContainer);
                     cell.onclick = () => openModal(isoDate, dayEvents);
                     daysGrid.appendChild(cell);
                 }
@@ -983,11 +1025,11 @@
                     let displayVal = "";
                     let displayName = e.cat;
 
-                    if(e.cat === 'Termin') {
+                    if(e.cat === 'Termin' || e.cat === 'Dienst') {
                         displayVal = "";
-                        displayName = e.note || "Termin";
+                        displayName = e.note || e.cat;
                     } else if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
-                        displayVal = formatNumber(e.hours / settings.stdHours) + " Tag(e)";
+                        displayVal = formatNumber(e.hours / 8) + " Tag(e)";
                     } else {
                         displayVal = formatNumber(e.hours) + " Std";
                     }
@@ -1008,7 +1050,7 @@
                             </div>
                             <div style="font-size:13px; color:#aaa">${e.timeDesc}</div>
                             ${displayVal ? `<div style="margin-top:2px;">${e.mode === 'taken' ? 'Genommen' : 'Erhalten'}: ${displayVal}</div>` : ''}
-                            ${(e.cat !== 'Termin' && e.note) ? `<div style="font-style:italic; font-size:12px; margin-top:4px; color:#888;">"${e.note}"</div>` : ''}
+                            ${(e.cat !== 'Termin' && e.cat !== 'Dienst' && e.note) ? `<div style="font-style:italic; font-size:12px; margin-top:4px; color:#888;">"${e.note}"</div>` : ''}
                         </div>
                     `;
                     let right = `<button onclick="deleteEntry(${e.id})" style="background:none; border:none; color:#FF453A; font-size:12px;">🗑️</button>`;
@@ -1022,11 +1064,18 @@
             
             // Reset Modal Input
             document.getElementById('modal-note-input').value = "";
+            setModalType('Termin'); // Default
             modalSelectedColor = 'pink';
             document.querySelectorAll('.modal-color-btn').forEach(b => b.classList.remove('selected'));
             document.querySelector('.modal-color-btn').classList.add('selected'); 
 
             document.getElementById('day-modal').classList.add('open');
+        }
+
+        function setModalType(type) {
+            modalSelectedType = type;
+            document.getElementById('type-termin').classList.toggle('active', type === 'Termin');
+            document.getElementById('type-dienst').classList.toggle('active', type === 'Dienst');
         }
 
         function selectModalColor(el, name) {
@@ -1044,11 +1093,11 @@
             
             const newEntry = {
                 id: Date.now(),
-                cat: 'Termin',
+                cat: modalSelectedType, // 'Termin' oder 'Dienst'
                 date: formatDateDE(modalCurrentIsoDate),
                 isoStart: modalCurrentIsoDate,
                 isoEnd: modalCurrentIsoDate,
-                timeDesc: "Termin",
+                timeDesc: modalSelectedType,
                 hours: 0,
                 mode: 'note',
                 note: text,
@@ -1060,6 +1109,22 @@
             
             openModal(modalCurrentIsoDate, getEventsForDate(modalCurrentIsoDate));
             updateUI(); 
+        }
+
+        function goToFullBooking() {
+            if(!modalCurrentIsoDate) return;
+            // Switch view
+            showView('view-input', document.querySelectorAll('.nav-item')[0], 'Eingabe');
+            // Set date
+            document.getElementById('date-single').value = modalCurrentIsoDate;
+            document.getElementById('date-start').value = modalCurrentIsoDate;
+            document.getElementById('date-end').value = modalCurrentIsoDate;
+            document.getElementById('date-manual').value = modalCurrentIsoDate;
+            
+            updateForm();
+            autoFillTimes();
+            calcDaysDiff();
+            closeModalDirect();
         }
 
         function closeModal(e) {
@@ -1078,7 +1143,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v18_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v20_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
