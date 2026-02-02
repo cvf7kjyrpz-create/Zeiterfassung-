@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V17">
-    <title>Arbeitszeit Tracker V17</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V18">
+    <title>Arbeitszeit Tracker V18</title>
 
     <style>
         :root {
@@ -729,12 +729,16 @@
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
 
-            const today = new Date().toISOString().slice(0,10);
+            // V18 Fix: Upcoming erst ab MORGEN
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().slice(0,10);
             
             const upcoming = entries
                 .filter(e => {
                     ensureIsoDates(e);
-                    return e.isoEnd >= today;
+                    return e.isoStart >= tomorrowStr;
                 })
                 .sort((a,b) => a.isoStart.localeCompare(b.isoStart))
                 .slice(0, 3); 
@@ -762,7 +766,7 @@
             } else {
                 listHtml = '<li class="upcoming-item" style="color:#666; justify-content:center;">Keine Einträge</li>';
             }
-            upcomingBox.innerHTML = `<h4>Kommende Termine</h4><ul class="upcoming-list">${listHtml}</ul>`;
+            upcomingBox.innerHTML = `<h4>Kommende Termine (ab morgen)</h4><ul class="upcoming-list">${listHtml}</ul>`;
             grid.appendChild(upcomingBox);
 
 
@@ -899,20 +903,18 @@
                     const isoDate = `${currentCalYear}-${mStr}-${dStr}`;
 
                     const dayEvents = getEventsForDate(isoDate);
-                    const dateObj = new Date(currentCalYear, i, d);
-                    const dayOfWeek = dateObj.getDay();
-
+                    
                     if(dayEvents.length > 0) {
-                        let primary = dayEvents[0];
-                        let showMark = true;
-                        
-                        if(calendarFilter === 'all') {
-                             if(primary.cat.startsWith('Urlaub') || primary.cat.startsWith('Sonder')) {
-                                if(dayOfWeek === 0 || dayOfWeek === 6) showMark = false;
-                            }
-                        }
-                        
-                        if(showMark) {
+                        // V18 Filter: Nur anzeigen wenn Termin ODER "taken" (frei)
+                        // "Earned" (Guthaben) wird im Kalender versteckt
+                        let visibleEvents = dayEvents.filter(e => {
+                            if(e.cat === 'Termin') return true;
+                            if(e.mode === 'taken') return true;
+                            return false; 
+                        });
+
+                        if(visibleEvents.length > 0) {
+                            let primary = visibleEvents[0];
                             cell.classList.add('has-event');
                             
                             if(primary.color) {
@@ -1047,7 +1049,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v17_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v18_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
