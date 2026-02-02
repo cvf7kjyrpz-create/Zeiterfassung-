@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V20">
-    <title>Arbeitszeit Tracker V20</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V21">
+    <title>Arbeitszeit Tracker V21</title>
 
     <style>
         :root {
@@ -155,18 +155,37 @@
         .stat-box.full-width { grid-column: span 2; cursor: default; padding-bottom: 4px; }
         .stat-box.full-width h4 { color: var(--accent); margin-bottom: 4px; font-size: 11px;}
         .upcoming-list { list-style: none; padding: 0; margin: 0; }
-        .upcoming-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        /* Clickable Item Style */
+        .upcoming-item { 
+            display: flex; justify-content: space-between; padding: 6px 4px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; 
+            cursor: pointer; border-radius: 4px; transition: background 0.2s;
+        }
+        .upcoming-item:active { background: #333; }
         .upcoming-item:last-child { border-bottom: none; }
-        .u-date { color: var(--text-sub); font-size: 11px; width: 70px; }
-        .u-name { font-weight: 600; text-align: right; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .u-date { color: var(--text-sub); font-size: 11px; width: 70px; pointer-events: none; }
+        .u-name { font-weight: 600; text-align: right; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; pointer-events: none; }
 
         /* KALENDER */
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
         
-        /* Filter Container Scrollable for small screens */
-        .cal-filter-container { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; -webkit-overflow-scrolling: touch; }
-        .cal-filter-btn { padding: 6px 12px; background-color: var(--card); border: 1px solid var(--card-border); border-radius: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        /* Filter Container - Kompakt & No Scroll */
+        .cal-filter-container { display: flex; gap: 4px; margin-bottom: 15px; width: 100%; justify-content: space-between; }
+        .cal-filter-btn { 
+            flex: 1; 
+            padding: 6px 2px; 
+            background-color: var(--card); 
+            border: 1px solid var(--card-border); 
+            border-radius: 8px; 
+            font-size: 10px; 
+            color: var(--text-sub); 
+            cursor: pointer; 
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .cal-filter-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
         
         .calendar-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
@@ -179,7 +198,7 @@
         .day-cell { 
             aspect-ratio: 1; 
             display: flex; 
-            flex-direction: column; /* Wichtig für Dots unten */
+            flex-direction: column; 
             justify-content: flex-start; 
             align-items: center; 
             font-size: 12px; 
@@ -193,7 +212,7 @@
         /* Multi-Color Dots Container */
         .event-dots {
             display: flex;
-            gap: 2px;
+            gap: 3px;
             margin-top: auto;
             margin-bottom: 4px;
             justify-content: center;
@@ -202,10 +221,11 @@
             padding: 0 2px;
         }
         .event-dot {
-            width: 5px;
-            height: 5px;
+            width: 7px; /* V21 Bigger */
+            height: 7px; /* V21 Bigger */
             border-radius: 50%;
             background-color: #555;
+            box-shadow: 0 0 2px rgba(0,0,0,0.8); /* V21 Shadow */
         }
         
         /* POPUP MODAL */
@@ -328,9 +348,10 @@
             
             <div class="cal-filter-container">
                 <div class="cal-filter-btn active" onclick="setCalFilter('all', this)">Alle</div>
-                <div class="cal-filter-btn" onclick="setCalFilter('taken', this)">Genommen (-)</div>
-                <div class="cal-filter-btn" onclick="setCalFilter('earned', this)">Erhalten (+)</div>
-                <div class="cal-filter-btn" onclick="setCalFilter('appointments', this)">Nur Termine/Dienste</div>
+                <div class="cal-filter-btn" onclick="setCalFilter('taken', this)">Genommen</div>
+                <div class="cal-filter-btn" onclick="setCalFilter('earned', this)">Erhalten</div>
+                <div class="cal-filter-btn" onclick="setCalFilter('termin', this)">Termin</div>
+                <div class="cal-filter-btn" onclick="setCalFilter('dienst', this)">Dienst</div>
             </div>
 
             <div class="calendar-grid" id="calendar-root"></div>
@@ -416,7 +437,6 @@
     <script>
         let entries = JSON.parse(localStorage.getItem('trackData_v5')) || [];
         let settings = JSON.parse(localStorage.getItem('trackSettings_v17')) || {
-            // V20: stdHours entfernt aus UI, default ist 8 falls nötig
             schedule: [
                 {s: "00:00", e: "00:00"}, // 0 So
                 {s: "07:00", e: "16:00"}, // 1 Mo
@@ -786,6 +806,7 @@
             });
         }
 
+        // V21: Interaktive Liste
         function renderStats() {
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
@@ -816,15 +837,16 @@
                     else if(u.cat === 'Urlaub') col = 'var(--c-urlaub)';
                     else if(u.cat === 'Stunden') col = 'var(--c-stunden)';
                     
+                    // ONCLICK EVENT HIER:
                     listHtml += `
-                        <li class="upcoming-item">
+                        <li class="upcoming-item" onclick="jumpToDate('${u.isoStart}')">
                             <span class="u-date">${formatDateDE(u.isoStart).slice(0,6)}</span>
                             <span class="u-name" style="color:${col}">${label}</span>
                         </li>
                     `;
                 });
             } else {
-                listHtml = '<li class="upcoming-item" style="color:#666; justify-content:center;">Keine Einträge</li>';
+                listHtml = '<li class="upcoming-item" style="color:#666; justify-content:center; pointer-events:none;">Keine Einträge</li>';
             }
             upcomingBox.innerHTML = `<h4>Kommende Termine (ab morgen)</h4><ul class="upcoming-list">${listHtml}</ul>`;
             grid.appendChild(upcomingBox);
@@ -893,6 +915,25 @@
             });
         }
 
+        // V21 NEW FUNCTION
+        function jumpToDate(isoDate) {
+            // Switch tab
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-calendar').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            // Index 1 is calendar (manuell)
+            document.querySelectorAll('.nav-item')[1].classList.add('active');
+
+            // Set Year and Render
+            const d = new Date(isoDate);
+            currentCalYear = d.getFullYear();
+            renderCalendar();
+
+            // Open Modal immediately
+            const events = getEventsForDate(isoDate);
+            openModal(isoDate, events);
+        }
+
         // --- KALENDER LOGIC ---
         function changeYear(delta) {
             currentCalYear += delta;
@@ -915,10 +956,10 @@
                 if(calendarFilter === 'all') return matchesDate;
                 if(calendarFilter === 'taken') return matchesDate && e.mode === 'taken';
                 if(calendarFilter === 'earned') return matchesDate && e.mode === 'earned';
-                // V20: Filter für Termine/Dienste
-                if(calendarFilter === 'appointments') {
-                    return matchesDate && (e.cat === 'Termin' || e.cat === 'Dienst');
-                }
+                // V21 Specific
+                if(calendarFilter === 'termin') return matchesDate && e.cat === 'Termin';
+                if(calendarFilter === 'dienst') return matchesDate && e.cat === 'Dienst';
+                
                 return false;
             });
         }
@@ -960,7 +1001,10 @@
                 for(let d=1; d<=daysInMonth; d++) {
                     const cell = document.createElement('div');
                     cell.className = 'day-cell';
-                    cell.innerText = d;
+                    // Text Node for number
+                    let spanNum = document.createElement('span');
+                    spanNum.innerText = d;
+                    cell.appendChild(spanNum);
 
                     const mStr = (i+1).toString().padStart(2, '0');
                     const dStr = d.toString().padStart(2, '0');
@@ -973,21 +1017,20 @@
                     dotsContainer.className = 'event-dots';
 
                     if(dayEvents.length > 0) {
-                        // Welche Events sollen angezeigt werden?
                         let visibleEvents = dayEvents.filter(e => {
-                            if(calendarFilter === 'appointments') return true; // Alles was durch Filter kam
-                            // Bei Filter "All" oder "Taken":
-                            if(e.cat === 'Termin' || e.cat === 'Dienst') return true;
-                            if(e.mode === 'taken') return true;
-                            return false; 
+                            // Filter Logic for dots
+                            if(calendarFilter === 'all') {
+                                if(e.cat === 'Termin' || e.cat === 'Dienst' || e.mode === 'taken') return true;
+                                return false;
+                            }
+                            // Specific filters handle by getEventsForDate already
+                            return true;
                         });
 
-                        // Für jeden sichtbaren Event einen Punkt erstellen
                         visibleEvents.forEach(e => {
                             let dot = document.createElement('div');
                             dot.className = 'event-dot';
                             
-                            // Farbe bestimmen
                             let bg = '#555';
                             if(e.color) bg = e.color;
                             else if(e.cat.startsWith('Urlaub')) bg = 'var(--c-urlaub)';
@@ -1000,6 +1043,9 @@
                             dot.style.backgroundColor = bg;
                             dotsContainer.appendChild(dot);
                         });
+                        
+                        // Background highlight if many
+                        if(visibleEvents.length > 0) cell.classList.add('has-event');
                     }
                     
                     cell.appendChild(dotsContainer);
@@ -1064,7 +1110,7 @@
             
             // Reset Modal Input
             document.getElementById('modal-note-input').value = "";
-            setModalType('Termin'); // Default
+            setModalType('Termin'); 
             modalSelectedColor = 'pink';
             document.querySelectorAll('.modal-color-btn').forEach(b => b.classList.remove('selected'));
             document.querySelector('.modal-color-btn').classList.add('selected'); 
@@ -1113,9 +1159,7 @@
 
         function goToFullBooking() {
             if(!modalCurrentIsoDate) return;
-            // Switch view
             showView('view-input', document.querySelectorAll('.nav-item')[0], 'Eingabe');
-            // Set date
             document.getElementById('date-single').value = modalCurrentIsoDate;
             document.getElementById('date-start').value = modalCurrentIsoDate;
             document.getElementById('date-end').value = modalCurrentIsoDate;
@@ -1143,7 +1187,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v20_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v21_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
