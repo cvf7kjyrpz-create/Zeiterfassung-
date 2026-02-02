@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V18">
-    <title>Arbeitszeit Tracker V18</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V19">
+    <title>Arbeitszeit Tracker V19</title>
 
     <style>
         :root {
@@ -247,8 +247,14 @@
                     <div class="input-col"><label>Datum</label><input type="date" id="date-single" onchange="autoFillTimes()"></div>
                 </div>
                 <div class="input-row">
-                    <div class="input-col"><label>Von</label><input type="time" id="time-start" value="07:00"></div>
-                    <div class="input-col"><label>Bis</label><input type="time" id="time-end" value="16:30"></div>
+                    <div class="input-col"><label>Von</label><input type="time" id="time-start" value="07:00" onchange="calculateDuration()"></div>
+                    <div class="input-col"><label>Bis</label><input type="time" id="time-end" value="16:30" onchange="calculateDuration()"></div>
+                </div>
+                <div class="input-row">
+                    <div class="input-col">
+                        <label>Dauer (Std) - änderbar</label>
+                        <input type="number" id="time-duration-override" step="0.1" placeholder="Automatisch berechnet">
+                    </div>
                 </div>
             </div>
 
@@ -417,7 +423,6 @@
             const tbody = document.getElementById('settings-tbody');
             tbody.innerHTML = '';
             
-            // Loop 1(Mo) to 6(Sa) then 0(So) for european order
             const order = [1,2,3,4,5,6,0];
             order.forEach(dayIdx => {
                 const s = settings.schedule[dayIdx];
@@ -449,7 +454,7 @@
             localStorage.setItem('trackSettings_v17', JSON.stringify(settings));
             document.getElementById('settings-modal').classList.remove('open');
             alert("Einstellungen gespeichert!");
-            updateUI(); // Refresh Stats etc.
+            updateUI(); 
         }
 
         function closeSettings(e) {
@@ -513,7 +518,23 @@
             if(plan) {
                 document.getElementById('time-start').value = plan.s;
                 document.getElementById('time-end').value = plan.e;
+                calculateDuration();
             }
+        }
+
+        function calculateDuration() {
+            const t1 = document.getElementById('time-start').value;
+            const t2 = document.getElementById('time-end').value;
+            if(!t1 || !t2) return;
+            
+            let s = t1.split(':').map(Number);
+            let e = t2.split(':').map(Number);
+            let diff = (e[0]*60 + e[1]) - (s[0]*60 + s[1]);
+            if(diff === 0) diff = 24 * 60; 
+            if(diff < 0) diff += 1440; 
+            
+            // Fülle das neue Feld
+            document.getElementById('time-duration-override').value = formatNumber(diff/60);
         }
 
         function calcDaysDiff() {
@@ -556,12 +577,20 @@
                 const d = document.getElementById('date-single').value;
                 const t1 = document.getElementById('time-start').value;
                 const t2 = document.getElementById('time-end').value;
-                let s = t1.split(':').map(Number);
-                let e = t2.split(':').map(Number);
-                let diff = (e[0]*60 + e[1]) - (s[0]*60 + s[1]);
-                if(diff === 0) diff = 24 * 60; 
-                if(diff < 0) diff += 1440; 
-                hoursValue = diff / 60;
+                
+                // Hole den Wert aus dem NEUEN Feld
+                let manualOverride = parseFloat(document.getElementById('time-duration-override').value);
+                if(isNaN(manualOverride)) {
+                     // Fallback, sollte aber eigentlich immer gefüllt sein durch calculateDuration
+                    let s = t1.split(':').map(Number);
+                    let e = t2.split(':').map(Number);
+                    let diff = (e[0]*60 + e[1]) - (s[0]*60 + s[1]);
+                    if(diff === 0) diff = 24 * 60; 
+                    if(diff < 0) diff += 1440; 
+                    manualOverride = diff / 60;
+                }
+
+                hoursValue = manualOverride;
                 displayDate = formatDateDE(d);
                 displayTime = `${t1} - ${t2}`;
                 isoStart = d; isoEnd = d;
