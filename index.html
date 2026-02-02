@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V24">
-    <title>Arbeitszeit Tracker V24</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V25">
+    <title>Arbeitszeit Tracker V25</title>
 
     <style>
         :root {
@@ -33,7 +33,7 @@
             --note-purple: #BF5AF2;
             --note-white: #EBEBF5;
 
-            /* Zeit Farben V24 */
+            /* Zeit Farben */
             --past: #FF453A;
             --future: #30D158;
         }
@@ -99,10 +99,21 @@
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
         .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); margin-top: 10px; }
         
-        /* Extra List Button V24 */
+        /* V25 LIST BUTTON - BLAU & AUFFÄLLIG */
         .btn-list-view {
-            width: 100%; padding: 10px; background: #333; color: white; border: 1px solid #555; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 15px; cursor: pointer;
+            width: 100%; 
+            padding: 12px; 
+            background: var(--accent); /* BLAU */
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 700; 
+            margin-bottom: 20px; 
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(10, 132, 255, 0.3);
         }
+        .btn-list-view:active { transform: scale(0.98); opacity: 0.9; }
 
         /* Toggle Switch */
         .toggle-container {
@@ -178,7 +189,7 @@
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
         
-        .cal-filter-container { display: flex; gap: 4px; margin-bottom: 10px; width: 100%; justify-content: space-between; }
+        .cal-filter-container { display: flex; gap: 4px; margin-bottom: 15px; width: 100%; justify-content: space-between; }
         .cal-filter-btn { 
             flex: 1; 
             padding: 6px 2px; 
@@ -254,7 +265,7 @@
         .modal-add-area { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
         .modal-add-title { font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 8px; }
 
-        /* V24 LIST MODAL STYLES */
+        /* V24/25 LIST MODAL STYLES */
         .list-view-item {
             padding: 12px;
             margin-bottom: 8px;
@@ -385,7 +396,7 @@
                 <div class="cal-filter-btn" onclick="setCalFilter('dienst', this)">Dienst</div>
             </div>
 
-            <button class="btn-list-view" onclick="openListModal()">📋 Liste öffnen (für Auswahl)</button>
+            <button class="btn-list-view" onclick="openListModal()">📋 Liste anzeigen</button>
 
             <div class="calendar-grid" id="calendar-root"></div>
             
@@ -1001,7 +1012,7 @@
             });
         }
 
-        // V24 NEW: MODAL LIST
+        // V24/25 NEW: MODAL LIST
         function openListModal() {
             const container = document.getElementById('list-view-body');
             container.innerHTML = '';
@@ -1018,10 +1029,6 @@
             const yearEntries = entries.filter(e => {
                 ensureIsoDates(e);
                 if(!e.isoStart) return false;
-                
-                // Filtere nach aktuellem Jahr? User wollte "Vergangenheit/Zukunft"
-                // Nehmen wir ALLE oder nur Jahr? Besser: ALLE, aber sortiert
-                // Damit man auch alte sieht
                 
                 if(calendarFilter === 'all') return true;
                 if(calendarFilter === 'taken') return e.mode === 'taken';
@@ -1298,7 +1305,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v24_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v25_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
