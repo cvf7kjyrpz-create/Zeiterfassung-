@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V7">
-    <title>Arbeitszeit Tracker V7</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V10">
+    <title>Arbeitszeit Tracker V10</title>
 
     <style>
         :root {
@@ -47,6 +47,7 @@
             background-color: var(--bg);
             text-align: center;
             border-bottom: 1px solid var(--card-border);
+            z-index: 100;
         }
         header h1 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; }
 
@@ -60,13 +61,10 @@
 
         /* Eingabe Form */
         .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        
-        /* WICHTIG: min-width: 0 verhindert das Zusammendrücken bei Flexbox */
         .input-col { flex: 1; min-width: 0; }
         
         label { display: block; color: var(--text-sub); font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
         
-        /* WICHTIG: Font-Size auf 17px erhöht gegen iOS Zoom */
         input, select, textarea {
             width: 100%;
             background-color: var(--input);
@@ -89,7 +87,7 @@
         .btn-primary { background-color: var(--card-border); color: var(--accent); }
         .btn-danger { background: none; color: var(--text-sub); border: 1px solid var(--card-border); padding: 8px; font-size: 12px; }
 
-        /* Toggle Switch */
+        /* Toggle Switch (Allgemein) */
         .toggle-container {
             display: flex; background: var(--card); border-radius: 8px; padding: 2px; margin-bottom: 15px; border: 1px solid var(--card-border);
         }
@@ -114,13 +112,13 @@
 
         .h-top { display: flex; justify-content: space-between; align-items: flex-start; }
         .h-title { font-size: 15px; font-weight: 600; }
-        .h-meta { font-size: 12px; color: var(--text-sub); margin-top: 2px;}
+        .h-meta { font-size: 13px; color: var(--text-sub); margin-top: 2px;}
         .h-val { font-size: 15px; font-weight: 700; text-align: right; }
         .h-val.neg { color: #ff453a; }
         .h-val.pos { color: #30d158; }
         .h-note { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #ddd; font-style: italic; }
 
-        /* STATISTIK GRID MIT EDIT-FUNKTION */
+        /* STATISTIK GRID */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .stat-box { 
             background-color: var(--card); 
@@ -131,21 +129,93 @@
             cursor: pointer;
         }
         .stat-box:active { opacity: 0.7; }
-        
         .stat-box h4 { margin: 0 0 5px; font-size: 11px; color: var(--text-sub); text-transform: uppercase; }
         .stat-box span { font-size: 18px; font-weight: 700; color: var(--text); }
         .unit { font-size: 12px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
+        .edit-icon { position: absolute; top: 10px; right: 10px; font-size: 14px; opacity: 0.5; }
+
+        /* KALENDER STYLES */
+        .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
+        .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
         
-        .edit-icon {
-            position: absolute; top: 10px; right: 10px; font-size: 14px; opacity: 0.5;
+        /* Kalender Filter Switch */
+        .cal-filter-container {
+            display: flex; gap: 5px; margin-bottom: 15px; justify-content: center;
         }
+        .cal-filter-btn {
+            padding: 6px 12px;
+            background-color: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 15px;
+            font-size: 12px;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+        .cal-filter-btn.active {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Portrait: 1 Monat pro Zeile */
+            gap: 20px;
+        }
+        @media (orientation: landscape) {
+            .calendar-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .month-card { background-color: var(--card); padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); }
+        .month-name { text-align: center; font-weight: 600; margin-bottom: 10px; color: var(--text-sub); text-transform: uppercase; font-size: 12px; }
+        
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+        .day-label { font-size: 9px; color: #555; padding-bottom: 5px; }
+        .day-cell { 
+            aspect-ratio: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 12px; 
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+        }
+        .day-cell.empty { background: none; pointer-events: none; }
+        
+        /* Marker Farben im Kalender */
+        .has-event { background-color: #333; color: white; font-weight: bold; }
+        .mark-urlaub { background-color: var(--c-urlaub); color: black; }
+        .mark-stunden { background-color: var(--c-stunden); color: white; }
+        .mark-krank { background-color: var(--c-krank); color: white; }
+        .mark-da { background-color: var(--c-da); color: white; }
+        .mark-lzk { background-color: var(--c-lzk); color: black; }
+        .mark-sonder { background-color: var(--c-sonder); color: black; }
+        
+        /* POPUP MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-content {
+            background: var(--card); width: 85%; max-width: 400px;
+            padding: 20px; border-radius: 16px; border: 1px solid var(--card-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;}
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .close-btn { background: none; border: none; font-size: 24px; color: var(--text-sub); cursor: pointer; }
 
         /* Tools */
         .data-tools { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border); display: flex; gap: 10px; }
         .btn-small { flex: 1; padding: 10px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 6px; font-size: 12px; }
 
         /* Navigation */
-        nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); border-top: 1px solid var(--card-border); display: flex; height: 50px; padding-bottom: env(safe-area-inset-bottom); }
+        nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); border-top: 1px solid var(--card-border); display: flex; height: 50px; padding-bottom: env(safe-area-inset-bottom); z-index: 500; }
         .nav-item { flex: 1; display: flex; justify-content: center; align-items: center; color: #555; font-size: 20px; }
         .nav-item.active { color: var(--accent); }
         
@@ -161,7 +231,6 @@
 
     <main>
         <div id="view-input" class="view active">
-            
             <div class="toggle-container">
                 <div class="toggle-btn active" id="btn-taken" onclick="setMode('taken')">Genommen (-)</div>
                 <div class="toggle-btn" id="btn-earned" onclick="setMode('earned')">Erhalten (+)</div>
@@ -220,6 +289,24 @@
             <button class="btn btn-primary" onclick="saveEntry()">Buchen</button>
         </div>
 
+        <div id="view-calendar" class="view">
+            <div class="year-selector">
+                <button class="year-btn" onclick="changeYear(-1)">‹</button>
+                <span id="calendar-year-display">2026</span>
+                <button class="year-btn" onclick="changeYear(1)">›</button>
+            </div>
+            
+            <div class="cal-filter-container">
+                <div class="cal-filter-btn active" onclick="setCalFilter('all', this)">Alle</div>
+                <div class="cal-filter-btn" onclick="setCalFilter('taken', this)">Genommen (-)</div>
+                <div class="cal-filter-btn" onclick="setCalFilter('earned', this)">Erhalten (+)</div>
+            </div>
+
+            <div class="calendar-grid" id="calendar-root">
+                </div>
+            <div style="height: 50px;"></div>
+        </div>
+
         <div id="view-history" class="view">
             <div id="history-list"></div>
             <p id="no-data-msg" style="text-align:center; color:#333; margin-top:30px; display:none;">Keine Einträge.</p>
@@ -230,9 +317,9 @@
             <div class="stats-grid" id="stats-grid"></div>
             
             <div class="data-tools">
-                <button class="btn-small" onclick="exportData()">💾 Backup</button>
-                <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Laden</button>
-                <input type="file" id="file-upload" style="display:none" onchange="importData(this)">
+                <button class="btn-small" onclick="exportData()">💾 Backup speichern</button>
+                <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Backup laden</button>
+                <input type="file" id="file-upload" accept=".json" style="display:none" onchange="importData(this)">
             </div>
             <div style="margin-top:20px;">
                  <button class="btn-danger" onclick="resetAll()">Alle Daten löschen</button>
@@ -240,8 +327,19 @@
         </div>
     </main>
 
+    <div id="day-modal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-date-title">01.01.2026</div>
+                <button class="close-btn" onclick="closeModalDirect()">×</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
     <nav>
         <div class="nav-item active" onclick="showView('view-input', this, 'Eingabe')">⌨️</div>
+        <div class="nav-item" onclick="showView('view-calendar', this, 'Kalender')">📅</div>
         <div class="nav-item" onclick="showView('view-history', this, 'Verlauf')">≡</div>
         <div class="nav-item" onclick="showView('view-stats', this, 'Statistik')">📊</div>
     </nav>
@@ -250,6 +348,8 @@
         let entries = JSON.parse(localStorage.getItem('trackData_v5')) || [];
         let mode = 'taken'; 
         const HOURS_PER_DAY = 8; 
+        let currentCalYear = new Date().getFullYear();
+        let calendarFilter = 'all'; // 'all', 'taken', 'earned'
 
         const SCHEDULE = {
             1: { s: "07:00", e: "17:30" }, 
@@ -261,13 +361,27 @@
 
         window.onload = function() {
             const today = new Date().toISOString().slice(0,10);
-            document.getElementById('date-single').value = today;
-            document.getElementById('date-start').value = today;
-            document.getElementById('date-end').value = today;
-            document.getElementById('date-manual').value = today;
+            if(document.getElementById('date-single')) document.getElementById('date-single').value = today;
+            if(document.getElementById('date-start')) document.getElementById('date-start').value = today;
+            if(document.getElementById('date-end')) document.getElementById('date-end').value = today;
+            if(document.getElementById('date-manual')) document.getElementById('date-manual').value = today;
+            
             updateForm();
             updateUI();
         };
+
+        // --- CORE FUNCTIONS ---
+        function formatDateDE(isoDate) {
+            if(!isoDate) return "";
+            if(isoDate.includes('.') && isoDate.length === 10) return isoDate;
+            const parts = isoDate.split('-');
+            if(parts.length !== 3) return isoDate;
+            return `${parts[2]}.${parts[1]}.${parts[0]}`; 
+        }
+
+        function formatNumber(num) {
+            return Number(num.toFixed(2)).toString();
+        }
 
         function setMode(m) {
             mode = m;
@@ -331,24 +445,24 @@
             document.getElementById('calc-days-val').value = count;
         }
 
+        // --- ENTRY SAVING ---
         function saveEntry() {
             const cat = document.getElementById('inp-cat').value;
             const note = document.getElementById('inp-note').value;
             let hoursValue = 0;
             let displayDate = "";
-            let displayTime = ""; 
+            let displayTime = "";
+            let isoStart = "";
+            let isoEnd = ""; 
 
             if (!document.getElementById('section-manual').classList.contains('hidden')) {
                 const val = parseFloat(document.getElementById('inp-amount').value);
                 const d = document.getElementById('date-manual').value;
                 if (!val || !d) { alert('Bitte Menge prüfen'); return; }
-                displayDate = d;
+                displayDate = formatDateDE(d);
                 displayTime = "Pauschal";
-                if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) {
-                    hoursValue = val * HOURS_PER_DAY;
-                } else {
-                    hoursValue = val;
-                }
+                hoursValue = (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) ? val * HOURS_PER_DAY : val;
+                isoStart = d; isoEnd = d;
             } else if (!document.getElementById('section-time-range').classList.contains('hidden')) {
                 const d = document.getElementById('date-single').value;
                 const t1 = document.getElementById('time-start').value;
@@ -359,39 +473,58 @@
                 if(diff === 0) diff = 24 * 60; 
                 if(diff < 0) diff += 1440; 
                 hoursValue = diff / 60;
-                displayDate = d;
+                displayDate = formatDateDE(d);
                 displayTime = `${t1} - ${t2}`;
+                isoStart = d; isoEnd = d;
             } else if (!document.getElementById('section-date-range').classList.contains('hidden')) {
                 const d1 = document.getElementById('date-start').value;
                 const d2 = document.getElementById('date-end').value;
                 const days = parseFloat(document.getElementById('calc-days-val').value);
                 if (days <= 0) { alert('0 Tage?'); return; }
-                displayDate = d1; 
-                if (d1 !== d2) displayDate += " bis " + d2;
+                displayDate = (d1 === d2) ? formatDateDE(d1) : formatDateDE(d1) + " - " + formatDateDE(d2);
                 displayTime = days + " Tag(e)";
                 hoursValue = days * HOURS_PER_DAY;
+                isoStart = d1; isoEnd = d2;
             }
 
-            addEntryInternal(cat, displayDate, displayTime, hoursValue, mode, note);
-            
+            const newEntry = {
+                id: Date.now(),
+                cat: cat,
+                date: displayDate,
+                isoStart: isoStart,
+                isoEnd: isoEnd,
+                timeDesc: displayTime,
+                hours: hoursValue,
+                mode: mode,
+                note: note
+            };
+
+            entries.unshift(newEntry);
+            localStorage.setItem('trackData_v5', JSON.stringify(entries));
             alert('Gespeichert');
             document.getElementById('inp-note').value = "";
             document.getElementById('inp-amount').value = "";
             updateUI();
         }
 
-        function addEntryInternal(cat, date, timeDesc, hours, mode, note) {
-            const newEntry = {
-                id: Date.now(),
-                cat: cat,
-                date: date,
-                timeDesc: timeDesc,
-                hours: hours,
-                mode: mode,
-                note: note
-            };
-            entries.unshift(newEntry);
-            localStorage.setItem('trackData_v5', JSON.stringify(entries));
+        function ensureIsoDates(e) {
+            if(e.isoStart) return; 
+            if(e.date.includes('.')) {
+                if(!e.date.includes('-')) {
+                    let parts = e.date.split('.');
+                    if(parts.length === 3) e.isoStart = e.isoEnd = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                } else {
+                    let dates = e.date.split(' - ');
+                    if(dates.length === 2) {
+                         let p1 = dates[0].split('.');
+                         let p2 = dates[1].split('.');
+                         e.isoStart = `${p1[2]}-${p1[1]}-${p1[0]}`;
+                         e.isoEnd = `${p2[2]}-${p2[1]}-${p2[0]}`;
+                    }
+                }
+            } else if(e.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                e.isoStart = e.isoEnd = e.date;
+            }
         }
 
         function deleteEntry(id) {
@@ -403,35 +536,37 @@
         }
 
         function adjustStat(catName, currentTotalHours, unit) {
-            let newValStr = prompt(`Aktuell: ${unit === 'Tage' ? (currentTotalHours/8).toFixed(2) : currentTotalHours.toFixed(2)} ${unit}.\n\nNeuer Stand:`);
-            
+            let newValStr = prompt(`Aktuell: ${formatNumber(unit === 'Tage' ? currentTotalHours/8 : currentTotalHours)} ${unit}.\n\nNeuer Stand:`);
             if (newValStr === null) return; 
             let newVal = parseFloat(newValStr.replace(',', '.'));
             if (isNaN(newVal)) { alert("Keine gültige Zahl"); return; }
-
             let targetHours = newVal;
             if (unit === 'Tage') targetHours = newVal * HOURS_PER_DAY;
-
             let diff = targetHours - currentTotalHours;
             if (diff === 0) return; 
-
             let mode = diff > 0 ? 'earned' : 'taken';
             let amount = Math.abs(diff);
-
-            addEntryInternal(
-                catName, 
-                new Date().toISOString().slice(0,10), 
-                "Korrektur", 
-                amount, 
-                mode, 
-                "Manuelle Korrektur Statistik"
-            );
+            
+            const nowIso = new Date().toISOString().slice(0,10);
+            const newEntry = {
+                id: Date.now(),
+                cat: catName,
+                date: formatDateDE(nowIso),
+                isoStart: nowIso, isoEnd: nowIso,
+                timeDesc: "Korrektur",
+                hours: amount,
+                mode: mode,
+                note: "Manuelle Korrektur Statistik"
+            };
+            entries.unshift(newEntry);
+            localStorage.setItem('trackData_v5', JSON.stringify(entries));
             updateUI();
         }
 
         function updateUI() {
             renderHistory();
             renderStats();
+            renderCalendar();
         }
 
         function renderHistory() {
@@ -454,10 +589,13 @@
                 
                 let displayVal = "";
                 if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
-                    displayVal = (e.hours / HOURS_PER_DAY).toFixed(2) + " d";
+                    displayVal = formatNumber(e.hours / HOURS_PER_DAY) + " d";
                 } else {
-                    displayVal = e.hours.toFixed(2) + " h";
+                    displayVal = formatNumber(e.hours) + " h";
                 }
+                
+                let showDate = e.date;
+                if(showDate.match(/^\d{4}-\d{2}-\d{2}$/)) showDate = formatDateDE(showDate);
 
                 let noteHtml = e.note ? `<div class="h-note">${e.note}</div>` : '';
 
@@ -466,7 +604,7 @@
                         <div class="h-top">
                             <div>
                                 <div class="h-title">${e.cat}</div>
-                                <div class="h-meta">${e.date} | ${e.timeDesc}</div>
+                                <div class="h-meta">${showDate} | ${e.timeDesc}</div>
                             </div>
                             <div class="h-val ${valClass}">${sign} ${displayVal}</div>
                         </div>
@@ -480,7 +618,6 @@
         function renderStats() {
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
-
             const categories = [
                 { name: 'Urlaub', unit: 'Tage' },
                 { name: 'Stunden', unit: 'Std' },
@@ -499,12 +636,12 @@
 
                 let displayVal = 0;
                 if(c.unit === 'Tage') {
-                    displayVal = (sumHours / HOURS_PER_DAY).toFixed(2);
+                    displayVal = formatNumber(sumHours / HOURS_PER_DAY);
                 } else {
-                    displayVal = sumHours.toFixed(2);
+                    displayVal = formatNumber(sumHours);
                 }
 
-                let color = displayVal >= 0 ? '#fff' : '#ff453a';
+                let color = parseFloat(displayVal) >= 0 ? '#fff' : '#ff453a';
 
                 let box = document.createElement('div');
                 box.className = 'stat-box';
@@ -513,21 +650,170 @@
                     <h4>${c.name}</h4>
                     <span style="color:${color}">${displayVal}<span class="unit">${c.unit}</span></span>
                 `;
-                box.onclick = function() {
-                    adjustStat(c.name, sumHours, c.unit);
-                };
-
+                box.onclick = function() { adjustStat(c.name, sumHours, c.unit); };
                 grid.appendChild(box);
             });
         }
 
+        // --- KALENDER LOGIC ---
+        function changeYear(delta) {
+            currentCalYear += delta;
+            renderCalendar();
+        }
+
+        function setCalFilter(filter, el) {
+            calendarFilter = filter;
+            document.querySelectorAll('.cal-filter-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+            renderCalendar();
+        }
+
+        function getEventsForDate(isoDate) {
+            return entries.filter(e => {
+                // Erst Datumscheck
+                ensureIsoDates(e);
+                if(!e.isoStart) return false;
+                const matchesDate = isoDate >= e.isoStart && isoDate <= e.isoEnd;
+                
+                // Dann Filtercheck
+                if(calendarFilter === 'all') return matchesDate;
+                if(calendarFilter === 'taken') return matchesDate && e.mode === 'taken';
+                if(calendarFilter === 'earned') return matchesDate && e.mode === 'earned';
+                
+                return false;
+            });
+        }
+
+        function renderCalendar() {
+            document.getElementById('calendar-year-display').innerText = currentCalYear;
+            const root = document.getElementById('calendar-root');
+            root.innerHTML = '';
+            const months = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+
+            for (let i = 0; i < 12; i++) {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month-card';
+                
+                const title = document.createElement('div');
+                title.className = 'month-name';
+                title.innerText = months[i];
+                monthDiv.appendChild(title);
+
+                const daysGrid = document.createElement('div');
+                daysGrid.className = 'days-grid';
+
+                const weekDays = ["M","D","M","D","F","S","S"];
+                weekDays.forEach(d => {
+                    const l = document.createElement('div');
+                    l.className = 'day-label';
+                    l.innerText = d;
+                    daysGrid.appendChild(l);
+                });
+
+                const firstDay = new Date(currentCalYear, i, 1).getDay(); // 0=So, 1=Mo
+                let startOffset = firstDay === 0 ? 6 : firstDay - 1;
+                const daysInMonth = new Date(currentCalYear, i + 1, 0).getDate();
+
+                for(let j=0; j<startOffset; j++) {
+                    const empty = document.createElement('div');
+                    empty.className = 'day-cell empty';
+                    daysGrid.appendChild(empty);
+                }
+
+                for(let d=1; d<=daysInMonth; d++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'day-cell';
+                    cell.innerText = d;
+
+                    const mStr = (i+1).toString().padStart(2, '0');
+                    const dStr = d.toString().padStart(2, '0');
+                    const isoDate = `${currentCalYear}-${mStr}-${dStr}`;
+
+                    const dayEvents = getEventsForDate(isoDate);
+                    const dateObj = new Date(currentCalYear, i, d);
+                    const dayOfWeek = dateObj.getDay();
+
+                    if(dayEvents.length > 0) {
+                        let primary = dayEvents[0];
+                        let showMark = true;
+                        
+                        // Nur Werktage markieren bei Urlaub (außer Filter ist an, dann vielleicht auch?)
+                        // Wir behalten die Logik: Wochenende nur markieren wenn es kein Urlaub/Sonderurlaub ist
+                        if(primary.cat.startsWith('Urlaub') || primary.cat.startsWith('Sonder')) {
+                            if(dayOfWeek === 0 || dayOfWeek === 6) showMark = false;
+                        }
+
+                        if(showMark) {
+                            cell.classList.add('has-event');
+                            if(primary.cat.startsWith('Urlaub')) cell.classList.add('mark-urlaub');
+                            else if(primary.cat.startsWith('Stunden')) cell.classList.add('mark-stunden');
+                            else if(primary.cat.startsWith('Kind')) cell.classList.add('mark-krank');
+                            else if(primary.cat.startsWith('DA')) cell.classList.add('mark-da');
+                            else if(primary.cat.startsWith('Lang')) cell.classList.add('mark-lzk');
+                            else if(primary.cat.startsWith('Sonder')) cell.classList.add('mark-sonder');
+                        }
+                    }
+
+                    cell.onclick = () => openModal(isoDate, dayEvents);
+                    daysGrid.appendChild(cell);
+                }
+
+                monthDiv.appendChild(daysGrid);
+                root.appendChild(monthDiv);
+            }
+        }
+
+        // --- POPUP LOGIC ---
+        function openModal(isoDate, events) {
+            const title = document.getElementById('modal-date-title');
+            title.innerText = formatDateDE(isoDate);
+            const body = document.getElementById('modal-body');
+            body.innerHTML = '';
+
+            if(events && events.length > 0) {
+                events.forEach(e => {
+                    let displayVal = "";
+                    if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
+                        displayVal = formatNumber(e.hours / HOURS_PER_DAY) + " Tag(e)";
+                    } else {
+                        displayVal = formatNumber(e.hours) + " Std";
+                    }
+                    
+                    let row = document.createElement('div');
+                    row.style.marginBottom = "10px";
+                    row.style.borderBottom = "1px solid #333";
+                    row.style.paddingBottom = "10px";
+                    row.innerHTML = `
+                        <div style="font-weight:bold; color:var(--accent)">${e.cat}</div>
+                        <div style="font-size:13px; color:#aaa">${e.timeDesc}</div>
+                        <div style="margin-top:2px;">${e.mode === 'taken' ? 'Genommen' : 'Erhalten'}: ${displayVal}</div>
+                        ${e.note ? `<div style="font-style:italic; font-size:12px; margin-top:4px; color:#888;">"${e.note}"</div>` : ''}
+                    `;
+                    body.appendChild(row);
+                });
+            } else {
+                body.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">Keine Einträge.</div>';
+            }
+            document.getElementById('day-modal').classList.add('open');
+        }
+
+        function closeModal(e) {
+            if (e.target.id === 'day-modal') {
+                document.getElementById('day-modal').classList.remove('open');
+            }
+        }
+        function closeModalDirect() {
+            document.getElementById('day-modal').classList.remove('open');
+        }
+
+        // --- IMPORT / EXPORT ---
         function exportData() {
             const dataStr = JSON.stringify(entries);
             const blob = new Blob([dataStr], {type: "application/json"});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v7_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v10_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -547,7 +833,7 @@
                             updateUI();
                         }
                     }
-                } catch(err) { alert("Fehler beim Laden"); }
+                } catch(err) { alert("Fehler"); }
             };
             reader.readAsText(file);
             input.value = '';
