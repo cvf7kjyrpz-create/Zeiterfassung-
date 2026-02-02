@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V22">
-    <title>Arbeitszeit Tracker V22</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V23">
+    <title>Arbeitszeit Tracker V23</title>
 
     <style>
         :root {
@@ -169,7 +169,7 @@
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
         
-        .cal-filter-container { display: flex; gap: 4px; margin-bottom: 15px; width: 100%; justify-content: space-between; }
+        .cal-filter-container { display: flex; gap: 4px; margin-bottom: 10px; width: 100%; justify-content: space-between; }
         .cal-filter-btn { 
             flex: 1; 
             padding: 6px 2px; 
@@ -185,6 +185,38 @@
             text-overflow: ellipsis;
         }
         .cal-filter-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
+        
+        /* NEW: LIST VIEW ABOVE CALENDAR */
+        #calendar-list-container {
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--card-border);
+            max-height: 250px; /* Begrenzte Höhe */
+            overflow-y: auto;  /* Scrollbar wenn voll */
+        }
+        .cal-list-header {
+            font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px; position: sticky; top: 0; background: var(--bg); padding-bottom: 5px; border-bottom: 1px solid #222;
+        }
+        .cal-list-item {
+            background-color: var(--card);
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+        }
+        .cal-list-item:active { background-color: #333; }
+        .cal-list-date {
+            width: 50px;
+            font-size: 12px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+        .cal-list-info { flex: 1; display: flex; align-items: center; gap: 8px; }
+        .cal-list-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 2px black; }
+        .cal-list-name { font-weight: 600; font-size: 13px; }
         
         .calendar-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (orientation: landscape) { .calendar-grid { grid-template-columns: 1fr 1fr 1fr; } }
@@ -224,37 +256,6 @@
             background-color: #555;
             box-shadow: 0 0 2px rgba(0,0,0,0.8);
         }
-        
-        /* NEW: LIST VIEW UNDER CALENDAR */
-        #calendar-list-container {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid var(--card-border);
-        }
-        .cal-list-header {
-            font-size: 12px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px;
-        }
-        .cal-list-item {
-            background-color: var(--card);
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            border: 1px solid var(--card-border);
-        }
-        .cal-list-item:active { background-color: #333; }
-        .cal-list-date {
-            width: 50px;
-            font-size: 12px;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
-        .cal-list-info { flex: 1; display: flex; align-items: center; gap: 8px; }
-        .cal-list-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 2px black; }
-        .cal-list-name { font-weight: 600; font-size: 14px; }
-        .cal-list-detail { font-size: 12px; color: #888; margin-left: auto; }
 
         /* POPUP MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
@@ -382,9 +383,9 @@
                 <div class="cal-filter-btn" onclick="setCalFilter('dienst', this)">Dienst</div>
             </div>
 
-            <div class="calendar-grid" id="calendar-root"></div>
-            
             <div id="calendar-list-container"></div>
+
+            <div class="calendar-grid" id="calendar-root"></div>
             
             <div style="height: 50px;"></div>
         </div>
@@ -837,6 +838,7 @@
             });
         }
 
+        // V21: Interaktive Liste
         function renderStats() {
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
@@ -867,6 +869,7 @@
                     else if(u.cat === 'Urlaub') col = 'var(--c-urlaub)';
                     else if(u.cat === 'Stunden') col = 'var(--c-stunden)';
                     
+                    // ONCLICK EVENT HIER:
                     listHtml += `
                         <li class="upcoming-item" onclick="jumpToDate('${u.isoStart}')">
                             <span class="u-date">${formatDateDE(u.isoStart).slice(0,6)}</span>
@@ -987,7 +990,7 @@
             });
         }
 
-        // V22: RENDER LIST BELOW CALENDAR
+        // V23: RENDER LIST ABOVE CALENDAR
         function renderCalendarList() {
             const container = document.getElementById('calendar-list-container');
             container.innerHTML = '';
@@ -1136,7 +1139,7 @@
                 root.appendChild(monthDiv);
             }
 
-            // V22: LISTE RENDERN
+            // V23: LISTE RENDERN
             renderCalendarList();
         }
 
@@ -1269,7 +1272,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v22_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v23_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
