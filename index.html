@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V16">
-    <title>Arbeitszeit Tracker V16</title>
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeit V17">
+    <title>Arbeitszeit Tracker V17</title>
 
     <style>
         :root {
@@ -109,6 +109,7 @@
         /* VERLAUF LISTE */
         .history-item {
             background-color: var(--card); padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #555; position: relative;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .cat-urlaub { border-left-color: var(--c-urlaub); }
         .cat-stunden { border-left-color: var(--c-stunden); }
@@ -118,28 +119,30 @@
         .cat-sonder { border-left-color: var(--c-sonder); }
         .cat-termin { border-left-width: 4px; border-left-style: solid; } 
 
+        .h-content { flex: 1; }
         .h-top { display: flex; justify-content: space-between; align-items: flex-start; }
         .h-title { font-size: 15px; font-weight: 600; }
         .h-meta { font-size: 13px; color: var(--text-sub); margin-top: 2px;}
-        .h-val { font-size: 15px; font-weight: 700; text-align: right; }
+        .h-val { font-size: 15px; font-weight: 700; text-align: right; margin-right: 10px;}
         .h-val.neg { color: #ff453a; }
         .h-val.pos { color: #30d158; }
         .h-note { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #ddd; font-style: italic; }
+        
+        .h-delete-btn {
+            background: none; border: none; font-size: 18px; cursor: pointer; padding: 10px; opacity: 0.6;
+        }
 
         /* STATISTIK GRID KOMPAKT */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        
         .stat-box { 
             background-color: var(--card); 
-            padding: 8px 10px; /* Kompakter */
+            padding: 8px 10px; 
             border-radius: 8px; 
             border: 1px solid var(--card-border); 
             position: relative;
             cursor: pointer;
         }
         .stat-box:active { opacity: 0.7; }
-        
-        /* Kleinere Schriften für Kompaktheit */
         .stat-box h4 { margin: 0 0 2px; font-size: 10px; color: var(--text-sub); text-transform: uppercase; }
         .stat-box span { font-size: 16px; font-weight: 700; color: var(--text); }
         .unit { font-size: 10px; color: var(--text-sub); font-weight: 400; margin-left: 2px; }
@@ -148,7 +151,6 @@
         .stat-box.summary { border-color: #555; background: #2c2c2e; cursor: default; }
         .stat-box.summary h4 { color: var(--accent); font-weight: bold; }
         
-        /* UPCOMING BOX KOMPAKT */
         .stat-box.full-width { grid-column: span 2; cursor: default; padding-bottom: 4px; }
         .stat-box.full-width h4 { color: var(--accent); margin-bottom: 4px; font-size: 11px;}
         .upcoming-list { list-style: none; padding: 0; margin: 0; }
@@ -157,30 +159,21 @@
         .u-date { color: var(--text-sub); font-size: 11px; width: 70px; }
         .u-name { font-weight: 600; text-align: right; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
-        /* KALENDER STYLES */
+        /* KALENDER */
         .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 18px; font-weight: bold; }
         .year-btn { background: none; border: none; color: var(--accent); font-size: 24px; cursor: pointer; padding: 0 20px; }
-        
         .cal-filter-container { display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; }
-        .cal-filter-btn {
-            padding: 6px 12px; background-color: var(--card); border: 1px solid var(--card-border); border-radius: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer;
-        }
+        .cal-filter-btn { padding: 6px 12px; background-color: var(--card); border: 1px solid var(--card-border); border-radius: 15px; font-size: 12px; color: var(--text-sub); cursor: pointer; }
         .cal-filter-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
-
         .calendar-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media (orientation: landscape) { .calendar-grid { grid-template-columns: 1fr 1fr 1fr; } }
-
         .month-card { background-color: var(--card); padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); }
         .month-name { text-align: center; font-weight: 600; margin-bottom: 10px; color: var(--text-sub); text-transform: uppercase; font-size: 12px; }
-        
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
         .day-label { font-size: 9px; color: #555; padding-bottom: 5px; }
-        .day-cell { 
-            aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 12px; border-radius: 4px; position: relative; cursor: pointer;
-        }
+        .day-cell { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 12px; border-radius: 4px; position: relative; cursor: pointer; }
         .day-cell.empty { background: none; pointer-events: none; }
         
-        /* Marker */
         .has-event { background-color: #333; color: white; font-weight: bold; }
         .mark-urlaub { background-color: var(--c-urlaub); color: black; }
         .mark-stunden { background-color: var(--c-stunden); color: white; }
@@ -190,14 +183,9 @@
         .mark-sonder { background-color: var(--c-sonder); color: black; }
         
         /* POPUP MODAL */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 1000; display: none; justify-content: center; align-items: center; }
         .modal-overlay.open { display: flex; }
-        .modal-content {
-            background: var(--card); width: 85%; max-width: 400px; padding: 20px; border-radius: 16px; border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-height: 80vh; overflow-y: auto;
-        }
+        .modal-content { background: var(--card); width: 85%; max-width: 400px; padding: 20px; border-radius: 16px; border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 80vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;}
         .modal-title { font-size: 18px; font-weight: 700; }
         .close-btn { background: none; border: none; font-size: 24px; color: var(--text-sub); cursor: pointer; }
@@ -208,9 +196,15 @@
         .modal-color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
         .modal-color-btn.selected { border-color: white; transform: scale(1.1); }
 
+        /* SETTINGS TABLE */
+        .settings-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .settings-table td { padding: 5px; }
+        .settings-table input[type="time"] { padding: 5px; font-size: 13px; border-radius: 4px; }
+        .settings-table input[type="number"] { padding: 5px; font-size: 13px; border-radius: 4px; width: 60px;}
+
         /* Tools */
-        .data-tools { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border); display: flex; gap: 10px; }
-        .btn-small { flex: 1; padding: 10px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 6px; font-size: 12px; }
+        .data-tools { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--card-border); display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-small { flex: 1; min-width: 45%; padding: 10px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 6px; font-size: 12px; margin-bottom: 5px; }
 
         /* Navigation */
         nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); border-top: 1px solid var(--card-border); display: flex; height: 50px; padding-bottom: env(safe-area-inset-bottom); z-index: 500; }
@@ -314,12 +308,11 @@
             <div class="stats-grid" id="stats-grid"></div>
             
             <div class="data-tools">
+                <button class="btn-small" onclick="openSettings()">⚙️ Zeiten konfigurieren</button>
                 <button class="btn-small" onclick="exportData()">💾 Backup</button>
                 <button class="btn-small" onclick="document.getElementById('file-upload').click()">📂 Laden</button>
                 <input type="file" id="file-upload" accept=".json" style="display:none" onchange="importData(this)">
-            </div>
-            <div style="margin-top:20px;">
-                 <button class="btn-danger" onclick="resetAll()">Alle Daten löschen</button>
+                <button class="btn-small" style="color:var(--c-krank); border-color:var(--c-krank);" onclick="resetAll()">⚠️ Reset</button>
             </div>
         </div>
     </main>
@@ -347,6 +340,28 @@
         </div>
     </div>
 
+    <div id="settings-modal" class="modal-overlay" onclick="closeSettings(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Arbeitszeiten</div>
+                <button class="close-btn" onclick="document.getElementById('settings-modal').classList.remove('open')">×</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label>Standard Stunden pro Tag (für Urlaub):</label>
+                <input type="number" id="set-std-hours" step="0.1" value="8">
+            </div>
+
+            <table class="settings-table">
+                <thead><tr><th>Tag</th><th>Von</th><th>Bis</th></tr></thead>
+                <tbody id="settings-tbody">
+                    </tbody>
+            </table>
+
+            <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:20px;">Speichern & Schließen</button>
+        </div>
+    </div>
+
     <nav>
         <div class="nav-item active" onclick="showView('view-input', this, 'Eingabe')">⌨️</div>
         <div class="nav-item" onclick="showView('view-calendar', this, 'Kalender')">📅</div>
@@ -356,20 +371,25 @@
 
     <script>
         let entries = JSON.parse(localStorage.getItem('trackData_v5')) || [];
+        // Settings laden oder Default
+        let settings = JSON.parse(localStorage.getItem('trackSettings_v17')) || {
+            stdHours: 8,
+            schedule: [
+                {s: "00:00", e: "00:00"}, // 0 So
+                {s: "07:00", e: "16:00"}, // 1 Mo
+                {s: "07:00", e: "16:00"}, // 2 Di
+                {s: "07:00", e: "16:00"}, // 3 Mi
+                {s: "07:00", e: "16:00"}, // 4 Do
+                {s: "07:00", e: "13:00"}, // 5 Fr
+                {s: "00:00", e: "00:00"}  // 6 Sa
+            ]
+        };
+
         let mode = 'taken'; 
-        const HOURS_PER_DAY = 8; 
         let currentCalYear = new Date().getFullYear();
         let calendarFilter = 'all';
         let modalCurrentIsoDate = null; 
         let modalSelectedColor = 'pink'; 
-
-        const SCHEDULE = {
-            1: { s: "07:00", e: "17:30" }, 
-            2: { s: "07:00", e: "16:30" }, 
-            3: { s: "07:00", e: "15:30" }, 
-            4: { s: "07:00", e: "16:30" }, 
-            5: { s: "07:00", e: "11:00" }  
-        };
 
         const COLOR_MAP = {
             'pink': '#FF2D55',
@@ -378,6 +398,7 @@
             'purple': '#BF5AF2',
             'white': '#EBEBF5'
         };
+        const DAY_NAMES = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
         window.onload = function() {
             const today = new Date().toISOString().slice(0,10);
@@ -390,6 +411,52 @@
             updateUI();
         };
 
+        // --- SETTINGS LOGIC ---
+        function openSettings() {
+            document.getElementById('set-std-hours').value = settings.stdHours;
+            const tbody = document.getElementById('settings-tbody');
+            tbody.innerHTML = '';
+            
+            // Loop 1(Mo) to 6(Sa) then 0(So) for european order
+            const order = [1,2,3,4,5,6,0];
+            order.forEach(dayIdx => {
+                const s = settings.schedule[dayIdx];
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${DAY_NAMES[dayIdx]}</td>
+                    <td><input type="time" id="set-s-${dayIdx}" value="${s.s}"></td>
+                    <td><input type="time" id="set-e-${dayIdx}" value="${s.e}"></td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('settings-modal').classList.add('open');
+        }
+
+        function saveSettings() {
+            settings.stdHours = parseFloat(document.getElementById('set-std-hours').value) || 8;
+            
+            for(let i=0; i<7; i++) {
+                const sInput = document.getElementById(`set-s-${i}`);
+                const eInput = document.getElementById(`set-e-${i}`);
+                if(sInput && eInput) {
+                    settings.schedule[i] = {
+                        s: sInput.value,
+                        e: eInput.value
+                    };
+                }
+            }
+            localStorage.setItem('trackSettings_v17', JSON.stringify(settings));
+            document.getElementById('settings-modal').classList.remove('open');
+            alert("Einstellungen gespeichert!");
+            updateUI(); // Refresh Stats etc.
+        }
+
+        function closeSettings(e) {
+            if(e.target.id === 'settings-modal') document.getElementById('settings-modal').classList.remove('open');
+        }
+
+        // --- CORE FUNCTIONS ---
         function formatDateDE(isoDate) {
             if(!isoDate) return "";
             if(isoDate.includes('.') && isoDate.length === 10) return isoDate;
@@ -441,7 +508,8 @@
             const dateInput = document.getElementById('date-single');
             if(!dateInput.value) return;
             const dayOfWeek = new Date(dateInput.value).getDay();
-            const plan = SCHEDULE[dayOfWeek];
+            // Nutze Settings
+            const plan = settings.schedule[dayOfWeek];
             if(plan) {
                 document.getElementById('time-start').value = plan.s;
                 document.getElementById('time-end').value = plan.e;
@@ -473,13 +541,16 @@
             let isoStart = "";
             let isoEnd = ""; 
 
+            // Benutze konfigurierte Std
+            const hoursPerDay = settings.stdHours;
+
             if (!document.getElementById('section-manual').classList.contains('hidden')) {
                 const val = parseFloat(document.getElementById('inp-amount').value);
                 const d = document.getElementById('date-manual').value;
                 if (isNaN(val) || !d) { alert('Bitte Menge prüfen'); return; }
                 displayDate = formatDateDE(d);
                 displayTime = "Pauschal";
-                hoursValue = (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) ? val * HOURS_PER_DAY : val;
+                hoursValue = (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(cat)) ? val * hoursPerDay : val;
                 isoStart = d; isoEnd = d;
             } else if (!document.getElementById('section-time-range').classList.contains('hidden')) {
                 const d = document.getElementById('date-single').value;
@@ -498,12 +569,11 @@
                 const d1 = document.getElementById('date-start').value;
                 const d2 = document.getElementById('date-end').value;
                 const days = parseFloat(document.getElementById('calc-days-val').value);
-                // V16: 0 Tage erlaubt, auch negativ für Korrekturen denkbar
                 if (isNaN(days) || days < 0) { alert('Tage prüfen'); return; }
                 
                 displayDate = (d1 === d2) ? formatDateDE(d1) : formatDateDE(d1) + " - " + formatDateDE(d2);
                 displayTime = days + " Tag(e)";
-                hoursValue = days * HOURS_PER_DAY;
+                hoursValue = days * hoursPerDay;
                 isoStart = d1; isoEnd = d2;
             }
 
@@ -549,7 +619,7 @@
         }
 
         function deleteEntry(id) {
-            if(confirm("Löschen?")) {
+            if(confirm("Diesen Eintrag wirklich löschen?")) {
                 entries = entries.filter(e => e.id !== id);
                 localStorage.setItem('trackData_v5', JSON.stringify(entries));
                 updateUI();
@@ -560,12 +630,12 @@
         }
 
         function adjustStat(catName, currentTotalHours, unit) {
-            let newValStr = prompt(`Aktuell: ${formatNumber(unit === 'Tage' ? currentTotalHours/8 : currentTotalHours)} ${unit}.\n\nNeuer Stand:`);
+            let newValStr = prompt(`Aktuell: ${formatNumber(unit === 'Tage' ? currentTotalHours/settings.stdHours : currentTotalHours)} ${unit}.\n\nNeuer Stand:`);
             if (newValStr === null) return; 
             let newVal = parseFloat(newValStr.replace(',', '.'));
             if (isNaN(newVal)) { alert("Keine gültige Zahl"); return; }
             let targetHours = newVal;
-            if (unit === 'Tage') targetHours = newVal * HOURS_PER_DAY;
+            if (unit === 'Tage') targetHours = newVal * settings.stdHours;
             let diff = targetHours - currentTotalHours;
             if (diff === 0) return; 
             let mode = diff > 0 ? 'earned' : 'taken';
@@ -623,7 +693,7 @@
                     displayVal = "";
                     sign = "";
                 } else if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
-                    displayVal = formatNumber(e.hours / HOURS_PER_DAY) + " d";
+                    displayVal = formatNumber(e.hours / settings.stdHours) + " d";
                 } else {
                     displayVal = formatNumber(e.hours) + " h";
                 }
@@ -637,15 +707,18 @@
                 let noteHtml = (e.cat !== 'Termin' && e.note) ? `<div class="h-note">${e.note}</div>` : '';
 
                 let item = `
-                    <div class="history-item ${colorClass}" style="${customStyle}" onclick="deleteEntry(${e.id})">
-                        <div class="h-top">
-                            <div>
-                                <div class="h-title">${displayTitle}</div>
-                                <div class="h-meta">${showDate} | ${e.timeDesc}</div>
+                    <div class="history-item ${colorClass}" style="${customStyle}">
+                        <div class="h-content">
+                            <div class="h-top">
+                                <div>
+                                    <div class="h-title">${displayTitle}</div>
+                                    <div class="h-meta">${showDate} | ${e.timeDesc}</div>
+                                </div>
+                                <div class="h-val ${valClass}">${sign} ${displayVal}</div>
                             </div>
-                            <div class="h-val ${valClass}">${sign} ${displayVal}</div>
+                            ${noteHtml}
                         </div>
-                        ${noteHtml}
+                        <button class="h-delete-btn" onclick="deleteEntry(${e.id})">🗑️</button>
                     </div>
                 `;
                 list.innerHTML += item;
@@ -656,18 +729,15 @@
             const grid = document.getElementById('stats-grid');
             grid.innerHTML = '';
 
-            // --- UPCOMING EVENTS (Alles ab heute) ---
             const today = new Date().toISOString().slice(0,10);
             
-            // Filter: Alle Einträge in der Zukunft
             const upcoming = entries
                 .filter(e => {
                     ensureIsoDates(e);
-                    // Prüfen ob End-Datum >= Heute ist
                     return e.isoEnd >= today;
                 })
                 .sort((a,b) => a.isoStart.localeCompare(b.isoStart))
-                .slice(0, 3); // Top 3
+                .slice(0, 3); 
 
             let upcomingBox = document.createElement('div');
             upcomingBox.className = 'stat-box full-width';
@@ -675,10 +745,8 @@
             if(upcoming.length > 0) {
                 upcoming.forEach(u => {
                     let label = u.cat;
-                    // Bei Termin nehmen wir die Note als Label
                     if(u.cat === 'Termin' && u.note) label = u.note;
                     
-                    // Farbe setzen
                     let col = 'white';
                     if(u.color) col = u.color;
                     else if(u.cat === 'Urlaub') col = 'var(--c-urlaub)';
@@ -698,7 +766,6 @@
             grid.appendChild(upcomingBox);
 
 
-            // --- SUMMEN ---
             let totalDays = 0;
             let totalHours = 0;
 
@@ -716,7 +783,7 @@
             let boxDays = document.createElement('div');
             boxDays.className = 'stat-box summary';
             let colD = totalDays >= 0 ? '#fff' : '#ff453a';
-            boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/HOURS_PER_DAY)}<span class="unit">Ges</span></span>`;
+            boxDays.innerHTML = `<h4>∑ Tage (Frei)</h4><span style="color:${colD}">${formatNumber(totalDays/settings.stdHours)}<span class="unit">Ges</span></span>`;
             grid.appendChild(boxDays);
 
             let boxHours = document.createElement('div');
@@ -743,7 +810,7 @@
 
                 let displayVal = 0;
                 if(c.unit === 'Tage') {
-                    displayVal = formatNumber(sumHours / HOURS_PER_DAY);
+                    displayVal = formatNumber(sumHours / settings.stdHours);
                 } else {
                     displayVal = formatNumber(sumHours);
                 }
@@ -889,7 +956,7 @@
                         displayVal = "";
                         displayName = e.note || "Termin";
                     } else if (['Urlaub','Kindkrank','DA','Sonderurlaub'].includes(e.cat)) {
-                        displayVal = formatNumber(e.hours / HOURS_PER_DAY) + " Tag(e)";
+                        displayVal = formatNumber(e.hours / settings.stdHours) + " Tag(e)";
                     } else {
                         displayVal = formatNumber(e.hours) + " Std";
                     }
@@ -913,7 +980,7 @@
                             ${(e.cat !== 'Termin' && e.note) ? `<div style="font-style:italic; font-size:12px; margin-top:4px; color:#888;">"${e.note}"</div>` : ''}
                         </div>
                     `;
-                    let right = `<button onclick="deleteEntry(${e.id})" style="background:none; border:none; color:#FF453A; font-size:12px;">Löschen</button>`;
+                    let right = `<button onclick="deleteEntry(${e.id})" style="background:none; border:none; color:#FF453A; font-size:12px;">🗑️</button>`;
                     
                     row.innerHTML = left + right;
                     body.appendChild(row);
@@ -980,7 +1047,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "backup_v16_" + new Date().toISOString().slice(0,10) + ".json";
+            a.download = "backup_v17_" + new Date().toISOString().slice(0,10) + ".json";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
